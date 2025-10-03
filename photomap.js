@@ -1,0 +1,77 @@
+
+// 所需套件：jQuery, Leaflet.js
+document.addEventListener('DOMContentLoaded', function () { // 確保資源加載完畢
+
+    $(document).ready(function() {
+
+        var map = L.map('map').setView([25.038, 121.5645], 15); // 設定初始中心點和縮放級別
+
+        // 載入ol 但未有圖層控制
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap 貢獻者',
+                    maxZoom: 18,
+                }).addTo(map);
+
+        
+
+        // 定位
+        map.locate({ setView: true, maxZoom: 16 });
+
+        map.on('locationerror', function(e) {
+            alert("無法取得定位：" + e.message);
+        });
+
+        map.on('locationfound', function (e) {
+            L.marker(e.latlng).addTo(map)
+            .bindPopup("你在這裡").openPopup();
+            handleMapClick(e.latlng.lat, e.latlng.lng);
+        });
+
+        //熱度圖製作 連結資料庫
+        // 回傳值data是一個json 包含經緯度資料，不須強度
+
+    
+        fetch("query.php")
+        .then(response => {
+            if (!response.ok) {
+            throw new Error("HTTP 錯誤狀態: " + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("後端回傳資料：", data);
+
+            if (!Array.isArray(data)) {
+            throw new Error("回傳資料不是陣列格式");
+            }
+
+            // 建立熱度圖 參數調整
+            var heat = L.heatLayer(data, {
+            radius: 20,
+            blur: 20,
+            maxZoom: 17,
+            gradient: {
+                0.0: 'blue',
+                0.3: 'cyan',
+                0.6: 'lime',
+                0.9: 'yellow',
+                1.0: 'red'
+            }
+            }).addTo(map);
+
+            document.getElementById('loading').innerHTML = "加載完成，點擊地圖查詢附近站點";
+        })
+        .catch(error => {
+            console.error("載入資料失敗：", error);
+            document.getElementById('loading').innerHTML = "❌ 資料載入失敗：" + error.message;
+        });
+
+
+
+
+
+    });
+
+
+
+});
