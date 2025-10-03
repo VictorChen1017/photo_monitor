@@ -6,12 +6,24 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
 
         var map = L.map('map').setView([25.038, 121.5645], 15); // 設定初始中心點和縮放級別
 
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var satellite = L.tileLayer(
+        'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        { attribution: 'Google Satellite' }
+        );
+
         // 載入ol 但未有圖層控制
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap 貢獻者',
                     maxZoom: 18,
                 }).addTo(map);
 
+        // 圖層控制
+        var heatLayer; 
+        var pointLayer; 
         
 
         // 定位
@@ -46,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
             }
 
             // 建立熱度圖 參數調整
-            var heat = L.heatLayer(data, {
+            heatLayer = L.heatLayer(data, {
             radius: 20,
             blur: 20,
             maxZoom: 17,
@@ -59,11 +71,43 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
             }
             }).addTo(map);
 
+                  // 建立點圖層
+            pointLayer = L.layerGroup();
+            data.forEach(function(coord) {
+                var marker = L.circleMarker([coord[0], coord[1]], {
+                    radius: 1,
+                    color: "black",
+                    fillColor: "black",
+                    fillOpacity: 0.6
+                });
+                marker.addTo(pointLayer);
+            });
+            // 預設不顯示，需手動開啟
+
             document.getElementById('loading').innerHTML = "加載完成，點擊地圖查詢附近站點";
         })
         .catch(error => {
             console.error("載入資料失敗：", error);
             document.getElementById('loading').innerHTML = "❌ 資料載入失敗：" + error.message;
+        });
+
+        // 監聽底圖切換
+        document.getElementById("layerSelector").addEventListener("change", function() {
+            if (this.value === "osm") {
+                map.addLayer(osm);
+                map.removeLayer(satellite);
+            } else {
+                map.addLayer(satellite);
+                map.removeLayer(osm);
+            }
+        });
+
+        document.getElementById("togglePoints").addEventListener("click", function() {
+            if (map.hasLayer(pointLayer)) {
+                map.removeLayer(pointLayer);
+            } else {
+                map.addLayer(pointLayer);
+            }
         });
 
 
