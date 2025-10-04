@@ -20,6 +20,7 @@ aside {
   flex-direction: column;
   align-items: center; /* Center children horizontally */
   height: 90vh; /* vh 是視窗高度的百分比 */
+  position: sticky;
 }
 
 .image-container {
