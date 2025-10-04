@@ -4,121 +4,118 @@
   <meta charset="UTF-8">
   <title>Cookie/Token 傳輸</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 響應式 -->
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 400px;
-    }
-    input, textarea, button {
-      padding: 10px;
-      font-size: 1rem;
-    }
-    button {
-      background: #0078d7;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #005ea6;
-    }
-    .result {
-      margin-top: 20px;
-      white-space: pre-wrap;
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
-    }
-  </style>
+
+    <!--   external style sheets, bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" type="text/css" href="./login.css"> 
+  <link rel="stylesheet" type="text/css" href="./aside.css"> 
+  
+
+
 </head>
 <body>
 
-  <h2>輸入 Synology 登入資訊</h2>
-  <form id="loginForm">
-    <label>
-      Cookie String:
-      <textarea name="cookie_str" id="cookie_str" required></textarea>
-    </label>
+  <div class="main_container">
 
-    <label>
-      Token:
-      <input type="text" name="token" id="token" required />
-    </label>
+    <div id="sidebar-container"></div>
 
-    <button type="submit">送出</button>
-  </form>
-  <div class="result" id="result"></div>
-
-  <button type="button" id="importBtn">載入資料庫</button>
-  <div class="result" id="importResult"></div>
+      <!-- 使用js呼叫sidebar -->
+      <script>
+          fetch("./aside.html")
+              .then(response => response.text())
+              .then(data => {
+              document.getElementById("sidebar-container").innerHTML = data;
+              });
+      </script>
 
   
 
-  <script>
+  <div id="login_container" class="content_container">
 
-    // 該表單輸入cookie及token的參數 若未來需要擴充，可以加入synology的帳號與密碼
+    <h2>輸入 Synology 登入資訊</h2>
+    <form id="loginForm">
+      <label>
+        Cookie String:
+        <textarea name="cookie_str" id="cookie_str" required></textarea>
+      </label>
 
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault(); // 阻止表單原始送出
+      <label>
+        Token:
+        <input type="text" name="token" id="token" required />
+      </label>
 
-      
+      <button type="submit">送出</button>
+    </form>
+    <div class="result" id="result"></div>
 
-      const cookie_str = document.getElementById("cookie_str").value;
-      const token = document.getElementById("token").value;
+    <button type="button" id="importBtn">載入資料庫</button>
+    <div class="result" id="importResult"></div>
 
-      // 先顯示等待提示
-      document.getElementById("result").innerText = "正在爬取照片中，請稍後...";
+    
 
-      // 使用 fetch (比舊的XMLHttpRequest更簡潔)
-      fetch("request.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `cookie_str=${encodeURIComponent(cookie_str)}&token=${encodeURIComponent(token)}`
-      })
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById("result").innerText = data;
-      })
-      .catch(error => {
-        document.getElementById("result").innerText = "錯誤：" + error;
+    <script>
+
+      // 該表單輸入cookie及token的參數 若未來需要擴充，可以加入synology的帳號與密碼
+
+      document.getElementById("loginForm").addEventListener("submit", function(e) {
+        e.preventDefault(); // 阻止表單原始送出
+
+        
+
+        const cookie_str = document.getElementById("cookie_str").value;
+        const token = document.getElementById("token").value;
+
+        // 先顯示等待提示
+        document.getElementById("result").innerText = "正在爬取照片中，請稍後...";
+
+        // 使用 fetch (比舊的XMLHttpRequest更簡潔)
+        fetch("request.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: `cookie_str=${encodeURIComponent(cookie_str)}&token=${encodeURIComponent(token)}`
+        })
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById("result").innerText = data;
+        })
+        .catch(error => {
+          document.getElementById("result").innerText = "錯誤：" + error;
+        });
       });
+    </script>
+
+    <script>
+    // 該段落用於匯入資料庫，執行import.php，並將結果顯示在頁面上
+    // 監聽載入資料庫按鈕
+    document.getElementById("importBtn").addEventListener("click", function() {
+      document.getElementById("importResult").innerText = "正在匯入資料庫，請稍候...";
+
+      fetch("import.php", { method: "POST" })
+        .then(response => response.json()) // 接收 JSON
+        .then(data => {
+          // 顯示結果
+          document.getElementById("importResult").innerText =
+            `✅ 匯入完成，目前共 ${data.total} 筆資料\n✅ 更新完成，本次更新 ${data.updated} 筆資料`;
+
+          // 儲存變數 (可供儀表板使用)
+          window.importStats = {
+            total: data.total,
+            updated: data.updated
+          };
+
+          console.log("儀表板用變數：", window.importStats);
+        })
+        .catch(error => {
+          document.getElementById("importResult").innerText = "錯誤：" + error;
+        });
     });
   </script>
-
-  <script>
-  // 該段落用於匯入資料庫，執行import.php，並將結果顯示在頁面上
-  // 監聽載入資料庫按鈕
-  document.getElementById("importBtn").addEventListener("click", function() {
-    document.getElementById("importResult").innerText = "正在匯入資料庫，請稍候...";
-
-    fetch("import.php", { method: "POST" })
-      .then(response => response.json()) // 接收 JSON
-      .then(data => {
-        // 顯示結果
-        document.getElementById("importResult").innerText =
-          `✅ 匯入完成，目前共 ${data.total} 筆資料\n✅ 更新完成，本次更新 ${data.updated} 筆資料`;
-
-        // 儲存變數 (可供儀表板使用)
-        window.importStats = {
-          total: data.total,
-          updated: data.updated
-        };
-
-        console.log("儀表板用變數：", window.importStats);
-      })
-      .catch(error => {
-        document.getElementById("importResult").innerText = "錯誤：" + error;
-      });
-  });
-</script>
+  </div>
+  </div>
 
 </body>
 </html>

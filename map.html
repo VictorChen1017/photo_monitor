@@ -14,6 +14,8 @@
         <!--   自訂css -->
 
         <link rel="stylesheet" type="text/css" href="./map.css"> 
+        <link rel="stylesheet" type="text/css" href="./aside.css"> 
+        
 
         <!--   外部js -->
 
@@ -57,11 +59,11 @@
 
             <!-- 網頁側邊欄 -->
             
-            <div id="sidebar-container"></div>
+            <div id="sidebar-container" class="content_container"></div>
 
             <!-- 使用js呼叫sidebar -->
             <script>
-                fetch("aside.html")
+                fetch("./aside.html")
                     .then(response => response.text())
                     .then(data => {
                     document.getElementById("sidebar-container").innerHTML = data;

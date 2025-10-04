@@ -1,6 +1,5 @@
 
 
-/* 網站主容器，將aside與section方開 */
 .main_container {
   padding-top: 75px;
   padding-left: 50px;
@@ -8,7 +7,8 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between; /* 讓兩部分分開排列 */
-}
+}   
+   
 
 /* 側邊欄 */
 aside {

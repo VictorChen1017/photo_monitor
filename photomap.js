@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
             data.forEach(function(coord) {
                 var marker = L.circleMarker([coord[0], coord[1]], {
                     radius: 1,
-                    color: "black",
-                    fillColor: "black",
+                    color: "blue",
+                    fillColor: "blue",
                     fillOpacity: 0.6
                 });
                 marker.addTo(pointLayer);

@@ -1,0 +1,17 @@
+.main_container {
+  padding-top: 75px;
+  padding-left: 50px;
+  padding-right: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* 讓兩部分分開排列 */
+}   
+   
+
+#db_container {
+    flex: 3;              /* 右側主內容較寬 */
+    padding: 0px 20px 20px 50px;
+    overflow-y: auto;
+    height: 100vh;
+    box-sizing: border-box;
+}

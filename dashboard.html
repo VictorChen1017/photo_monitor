@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>儀錶板</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 響應式 -->
+
+    <!--   external style sheets, bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+  
+    <!--  儀錶板css放這裡 -->
+    <link rel="stylesheet" type="text/css" href="./dashboard.css">
+    <link rel="stylesheet" type="text/css" href="./aside.css"> 
+ 
+
+
+</head>
+<body>
+
+<div class="main_container">
+
+    <div id="sidebar-container"></div>
+
+    <!-- 使用js呼叫sidebar -->
+    <script>
+        fetch("./aside.html")
+            .then(response => response.text())
+            .then(data => {
+            document.getElementById("sidebar-container").innerHTML = data;
+            });
+    </script>
+
+    <div id="db_container" class="content_container">
+        <h2>儀錶板</h2>
+        <p>這是儀錶板的內容區域。</p>
+        <!-- 儀錶板的其他內容可以放在這裡 -->
+
+
+    </div>
+</div>
+
+</body>
