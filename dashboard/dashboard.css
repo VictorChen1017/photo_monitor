@@ -1,0 +1,53 @@
+.main_container {
+  padding-top: 75px;
+  padding-left: 50px;
+  padding-right: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* 讓兩部分分開排列 */
+  overflow: hidden; /* 防止滾動條出現  */
+}   
+   
+
+#db_container {
+    flex: 3;              /* 右側主內容較寬 */
+    padding: 0px 20px 20px 50px;
+    overflow-y: auto; /* 右側可以滾動 */
+    height: 90vh;
+    box-sizing: border-box;
+}
+
+/* Grid 佈局 */
+    .importResult {
+        width: 100%; 
+        padding: 10px 20px; 
+        box-sizing: border-box;
+    }
+    /* Grid 佈局 */
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 三欄 */
+        grid-gap: 20px;
+        padding: 20px;
+        /* 關鍵設定 高度撐滿父容器 (#db_container) */
+        height: 100%;       
+        box-sizing: border-box;
+    }
+
+    .card {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      min-height: 200px;
+      display: flex;
+      align-items: center;   /* 垂直置中 */
+      justify-content: center; /* 水平置中 */
+      overflow: hidden; /* 避免圖表溢出 */
+    }
+
+    .full-width {
+        grid-column: span 3; /* 直條圖佔滿整行 */
+        align-items: center;   /* 垂直置中 */
+        justify-content: center; /* 水平置中 */
+    }

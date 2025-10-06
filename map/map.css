@@ -1,0 +1,54 @@
+
+ /* 主頁面排版 */
+
+.main_container {
+  display: flex;        /* 水平排列子元素 */
+  height: 100vh;        /* 占滿整個畫面高度 */
+  box-sizing: border-box;
+}
+
+
+#map_container {
+  flex: 3;              /* 右側主內容較寬 */
+  padding: 0px 20px 20px 50px;
+  overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+
+ /* toolbar區域 */
+
+#map_toolbar {
+  display: flex;
+  justify-content: flex-start;/* 讓子元素靠左排列 */
+  align-items: center;
+  height: 100px; /* 或你要的高度，例如 50px、80px */
+  padding: 10px; /* 調整上下左右的內距 */
+  gap: 10px; /* 元素之間的間距 */
+  background-color: 	#d6d6d6de;           /* 調整toolbar顏色 */
+  border-bottom: 1px solid #ccc;
+}
+
+
+#map_toolbar > * {
+  text-align: center;    /* 讓按鈕或選單置中顯示 */
+  margin: 0 5px;         /* 元素之間留點空隙 */
+  padding: 10px 16px; /* 上下10px 左右16px，會讓按鈕變厚 */
+  font-size: 25px;
+  border-radius: 4px;
+  border: 1px solid #aaa;
+  background-color: white;
+  cursor: pointer;
+
+}
+
+ /* 地圖區域 */
+#map {
+    height: 600px;
+    width: 100%;
+}
+#loading, #coordinates {
+    margin-top: 10px;
+    font-family: sans-serif;
+}

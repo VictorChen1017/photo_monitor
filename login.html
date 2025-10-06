@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
   
-  <link rel="stylesheet" type="text/css" href="./login.css"> 
+  <link rel="stylesheet" type="text/css" href="./login/login.css"> 
   <link rel="stylesheet" type="text/css" href="./aside.css"> 
   
 
@@ -71,7 +71,7 @@
         document.getElementById("result").innerText = "正在爬取照片中，請稍後...";
 
         // 使用 fetch (比舊的XMLHttpRequest更簡潔)
-        fetch("request.php", {
+        fetch("login/request.php", {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"
@@ -94,7 +94,7 @@
     document.getElementById("importBtn").addEventListener("click", function() {
       document.getElementById("importResult").innerText = "正在匯入資料庫，請稍候...";
 
-      fetch("import.php", { method: "POST" })
+      fetch("login/import.php", { method: "POST" })
         .then(response => response.json()) // 接收 JSON
         .then(data => {
           // 顯示結果

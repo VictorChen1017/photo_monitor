@@ -7,17 +7,27 @@
 
     <!--   external style sheets -->
 
-    <!-- bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
-  
+        <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+    
     <!-- plotly -->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!--include jQuery-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous">
+
+    </script>   
 
 
     <!--  儀錶板css放這裡 -->
-    <link rel="stylesheet" type="text/css" href="./dashboard.css">
+    <link rel="stylesheet" type="text/css" href="./dashboard/dashboard.css">
     <link rel="stylesheet" type="text/css" href="./aside.css"> 
+
+    <!--   自訂js  -->
+     <script src="./dashboard/dashboard.js"></script> 
  
 
 
@@ -40,10 +50,15 @@
     <div id="db_container" class="content_container">
 
         <!-- 儀錶板的其他內容可以放在這裡 -->
-
+    <div id="importResult" style="font-size:14px; color:#555; white-space:pre-wrap; margin-top:8px;"></div>
     <div class="dashboard">
+
         <!-- 指標圖1 -->
-        <div class="card" id="indicator1"></div>
+        <div class="card" id="indicator1">
+            <!-- Plotly 圖表 -->
+
+
+        </div>
         <!-- 指標圖2 -->
         <div class="card" id="indicator2"></div>
         <!-- 空白卡片或其他內容 -->
@@ -51,47 +66,6 @@
         <!-- 可互動直條圖 -->
         <div class="card full-width" id="barChart"></div>
     </div>
-
-    <script>
-        // 照片總數
-        Plotly.newPlot('indicator1', [{
-            type: "indicator",
-            mode: "number+delta",
-            value: 38286,
-            title: { text: "照片總數" },
-            delta: { reference: 38000, increasing: { color: "green" } }
-            }], { autosize: true, // 自動調整大小 以符合card範圍
-            //height: 150,  // 給一個適合卡片的高度
-            margin: { t: 20, b: 20, l: 20, r: 20 }
-            });
-
-        // 本月新增照片
-        Plotly.newPlot('indicator2', [{
-            type: "indicator",
-            mode: "number",
-            value: 120,
-            title: { text: "本月新增" }
-            }], { autosize: true, // 自動調整大小 以符合card範圍
-            height: 150,  // 給一個適合卡片的高度
-            margin: { t: 20, b: 20, l: 20, r: 20 }
-            });
-
-        // 可互動直條圖
-        var months = ["1月", "2月", "3月", "4月", "5月"];
-        var values = [500, 800, 600, 1000, 1200];
-
-        Plotly.newPlot('barChart', [{
-            x: months,
-            y: values,
-            type: "bar",
-            marker: { color: "steelblue" }
-            }], {
-            title: "每月新增照片數",
-            margin: { t: 50, b: 50 },
-            xaxis: { title: "月份" },
-            yaxis: { title: "照片數" }
-            });
-    </script>
 
 
     </div>
