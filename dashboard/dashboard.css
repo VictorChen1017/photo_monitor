@@ -29,8 +29,9 @@
         grid-template-columns: repeat(3, 1fr); /* 三欄 */
         grid-gap: 20px;
         padding: 20px;
+        height: auto;
         /* 關鍵設定 高度撐滿父容器 (#db_container) */
-        height: 100%;       
+        /* height: 100%;     */
         box-sizing: border-box;
     }
 

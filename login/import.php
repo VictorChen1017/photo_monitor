@@ -75,7 +75,7 @@ foreach ($data as $row) {
 $total = count($data);
 //$message  = "✅ 匯入完成，目前共 {$total} 筆資料\n";
 //$message .= "✅ 更新完成，本次更新 {$updatedcount} 筆資料\n";
-
+date_default_timezone_set('Asia/Taipei');
 // 建立更新資訊
 $logData = [
     "status"           => "success",
