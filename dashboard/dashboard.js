@@ -6,22 +6,23 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
     $(document).ready(function() {
 
         // 指標圖 indicator1 照片總數
-        
-        fetch("login/update_log.json")  // 來自import.php的更新紀錄
+
+        fetch("dashboard/dashboard.php?type=photo")  // 來自import.php的更新紀錄
         .then(res => res.json())
         .then(data => {
             Plotly.newPlot('indicator1', [{
             type: "indicator",
             mode: "number+delta",
-            value: data.total, // 照片總數
+            value: data.photo_total, // 照片總數
             number: { // 格式設定
                 valueformat: ",", // 加上千分位，避免出現 K
             },
             title: { text: "📸 照片總數" , font: { size: 16 }},
             delta: {
-                reference: data.total-data.updated,
+                reference: data.photo_total-data.photo_month_new,
                 increasing: { color: "green" },
-                decreasing: { color: "red" }
+                decreasing: { color: "red" },
+                valueformat: "," // 加上千分位，避免出現 K
             }
             }], {
             autosize: true,
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
 
         
         // 照片類型圓餅圖
-        fetch("dashboard/dashboard.php")
+        fetch("dashboard/dashboard.php?type=types")
         .then(response => response.json())
         .then(data => {
             const types = data.types;
@@ -71,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
         .catch(error => console.error('Error fetching data:', error));
 
         //有定位的照片數量
-        fetch("dashboard/dashboard.php")  // 來自import.php的更新紀錄
+        fetch("dashboard/dashboard.php?type=geo")  // 來自import.php的更新紀錄
         .then(res => res.json())
         .then(data => {
             Plotly.newPlot('indicator3', [{
@@ -98,12 +99,12 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
 
         // 每日資料筆數分布圖
 
-        fetch("dashboard/dashboard.php")
+        fetch("dashboard/dashboard.php?type=time_day")
         .then(response => response.json())
         .then(data => {
 
 
-        const timeData = data.time || []; // 確保不報錯
+        const timeData = data.time_day || []; // 確保不報錯
 
         // 取出日期與數值
         const days = timeData.map(item => item.day);
@@ -151,8 +152,116 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
 
         // 在 card 中繪製
         Plotly.newPlot('barChart', [trace], layout, { displayModeBar: false });
-    })
-    .catch(error => console.error('Error fetching data:', error));
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
+
+        // 每月資料筆數分布圖
+
+        fetch("dashboard/dashboard.php?type=time_month")
+        .then(response => response.json())
+        .then(data => {
+
+
+        const timeData = data.time_month || []; // 確保不報錯
+
+        // 取出日期與數值
+        const months = timeData.map(item => item.month);
+        const counts = timeData.map(item => parseInt(item.count));
+
+        // 建立直條圖 trace
+        const trace = {
+        x: months,
+        y: counts,
+        type: 'bar',
+        marker: { color: '#9A3033' },
+        hoverinfo: 'x+y',
+        };
+
+              // 找出日期範圍
+        const maxDate = new Date(Math.max(...months.map(m => new Date(m))));
+        const minDate = new Date(maxDate);
+        minDate.setMonth(minDate.getMonth() - 24); // ← 這裡設定預設為12個月區間
+
+        
+
+        // Layout 設定
+        const layout = {
+        title: { text: '每月資料筆數分布', font: { size: 16 } },
+        xaxis: {
+            title: '日期',
+            type: 'date',
+            range: [minDate.toISOString().split('T')[0], maxDate.toISOString().split('T')[0]], // ✅ 預設為24M區間
+            rangeslider: { visible: true },  // 加入滑動條
+            rangeselector: {
+            buttons: [
+                { count: 1, label: '1y', step: 'year', stepmode: 'backward' },
+                { count: 2, label: '2y', step: 'year', stepmode: 'backward' },
+                { count: 5, label: '5y', step: 'year', stepmode: 'backward' },
+                { step: 'all', label: '全部' }
+            ]
+            }
+        },
+        yaxis: { title: '筆數 (count)' },
+        margin: { t: 40, b: 50, l: 50, r: 20 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        height: 250
+        };
+
+        // 在 card 中繪製
+        Plotly.newPlot('barChart_month', [trace], layout, { displayModeBar: false });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
+
+        // 每年資料筆數分布圖(不須縮放)
+
+        fetch("dashboard/dashboard.php?type=time_year")
+        .then(response => response.json())
+        .then(data => {
+
+
+        const timeData = data.time_year || []; // 確保不報錯
+
+        // 取出日期與數值
+        const years = timeData.map(item => item.year);
+        const counts = timeData.map(item => parseInt(item.count));
+
+        // 建立直條圖 trace
+        const trace = {
+        x: years,
+        y: counts,
+        type: 'bar',
+        marker: { color: '#9A3033' },
+        hoverinfo: 'x+y',
+        };
+
+        
+
+        // Layout 設定
+        const layout = {
+        title: { text: '每年資料筆數分布', font: { size: 16 } },
+        xaxis: {
+            title: '日期',
+            type: 'date',
+            rangeslider: { visible: false },  // 加入滑動條
+            rangeselector: {
+            }
+        },
+        yaxis: { title: '筆數 (count)' },
+        margin: { t: 40, b: 50, l: 50, r: 20 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        height: 250
+        };
+
+        // 在 card 中繪製
+        Plotly.newPlot('barChart_year', [trace], layout, { displayModeBar: false });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
+
 
 
 
