@@ -1,6 +1,8 @@
 {
     "status": "success",
+    "new": 0,
+    "updated": 38421,
+    "deleted": 0,
     "total": 38421,
-    "updated": 0,
-    "last_update_time": "2025-10-06 11:58:21"
+    "last_update_time": "2025-10-06 18:08:45"
 }

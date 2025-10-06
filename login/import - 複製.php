@@ -31,29 +31,20 @@ $stmt = $mysqli->prepare("
       gps_longitude=VALUES(gps_longitude)
 ");
 
-// 快速對比現有資料與資料庫，避免重複匯入同時確保同步
+//找出目前最大ID，避免重複匯入
+$result = $mysqli->query("SELECT MAX(id) as last_id FROM photos");
+$row = $result->fetch_assoc();
+$last_id = $row['last_id'] ?? 0;
+$updatedcount = 0; // 計數更新數量
 
-
-// === 建立資料庫現有 ID 清單（用於同步比對） ===
-$db_ids = [];
-$res = $mysqli->query("SELECT id FROM photos");
-if ($res) {
-    while ($row = $res->fetch_assoc()) {
-        $db_ids[] = (int)$row['id'];
-    }
-}
-$db_set = array_flip($db_ids); // 轉成哈希表方便查找
-
-// === 2. 準備統計 ===
-$new_count = 0;
-$update_count = 0;
-
-
-
-// === 3. 匯入 JSON ===
+// 匯入資料
 foreach ($data as $row) {
-    $id = (int)$row['id'];
 
+    if ($row['id'] <= $last_id) {
+        continue; // 跳過已存在的
+    }
+    $updatedcount++;
+    $id = $row['id'];
     $filename = $row['filename'];
     $filesize = $row['filesize'];
     $time = $row['time'];
@@ -61,32 +52,23 @@ foreach ($data as $row) {
     $owner_user_id = $row['owner_user_id'];
     $folder_id = $row['folder_id'];
     $type = $row['type'];
-    $gps_lat = $row['additional']['gps']['latitude'] ?? null;
-    $gps_lng = $row['additional']['gps']['longitude'] ?? null;
 
-    // 如果資料庫已有此ID → 更新
-    if (isset($db_set[$id])) {
-        $update_count++;
-    } else {
-        $new_count++;
-    }
+    // 解析 gps
+    // NULL可以接受
+    $gps_lat = isset($row['additional']['gps']['latitude']) ? $row['additional']['gps']['latitude'] : null;
+    $gps_lng = isset($row['additional']['gps']['longitude']) ? $row['additional']['gps']['longitude'] : null;
 
-    $stmt->bind_param("isiiiiisds",
+    // 保留完整 additional
+    //$additional = json_encode($row['additional'], JSON_UNESCAPED_UNICODE);
+
+    $stmt->bind_param( // 將資料套進去預設的SQL格式，取代???
+        "isiiiiisds", //每行資料型態
         $id, $filename, $filesize, $time, $indexed_time,
-        $owner_user_id, $folder_id, $type, $gps_lat, $gps_lng
+        $owner_user_id, $folder_id, $type,
+        $gps_lat, $gps_lng
     );
     $stmt->execute();
-
-    // 匯入後從db_set移除，剩下的就是待刪除的
-    unset($db_set[$id]);
 }
-
-// === 4. 刪除不在JSON的舊資料 ===
-if (!empty($db_set)) {
-    $ids_to_delete = implode(",", array_keys($db_set));
-    $mysqli->query("DELETE FROM photos WHERE id IN ($ids_to_delete)");
-}
-
 
 //echo "✅ 匯入完成，目前共 " . count($data) . " 筆資料\n";
 //echo "✅ 更新完成，本次更新 " . $updatedcount . " 筆資料\n";
@@ -94,16 +76,14 @@ $total = count($data);
 //$message  = "✅ 匯入完成，目前共 {$total} 筆資料\n";
 //$message .= "✅ 更新完成，本次更新 {$updatedcount} 筆資料\n";
 date_default_timezone_set('Asia/Taipei');
-
-// === 5. 寫入日誌 ===
+// 建立更新資訊
 $logData = [
-    "status" => "success",
-    "new" => $new_count,
-    "updated" => $update_count,
-    "deleted" => count($db_set),
-    "total" => count($data),
+    "status"           => "success",
+    "total"            => count($data),
+    "updated"          => $updatedcount,
     "last_update_time" => date("Y-m-d H:i:s")
 ];
+
 // === 寫入紀錄檔 ===
 $logFile = __DIR__ . "/update_log.json";
 if (file_exists($logFile)) {

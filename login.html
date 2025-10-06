@@ -99,12 +99,12 @@
         .then(data => {
           // 顯示結果
           document.getElementById("importResult").innerText =
-            `✅ 匯入完成，目前共 ${data.total} 筆資料\n✅ 更新完成，本次更新 ${data.updated} 筆資料`;
+            `✅ 匯入完成，目前共 ${data.total} 筆資料\n✅ 更新完成，本次更新 ${data.new} 筆資料\n✅ 刪除 ${data.deleted} 筆資料\n🕒 最後更新時間 ${data.last_update_time}`;
 
           // 儲存變數 (可供儀表板使用)
           window.importStats = {
             total: data.total,
-            updated: data.updated
+            updated: data.new
           };
 
           console.log("儀表板用變數：", window.importStats);
