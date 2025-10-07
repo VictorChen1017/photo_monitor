@@ -36,6 +36,5 @@ $mysqli->close();
 // 3. 回傳 JSON
 echo json_encode($heatPoints);
 
-
 ?>
 

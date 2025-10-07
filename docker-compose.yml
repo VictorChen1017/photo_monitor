@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 🐘 PHP + Apache
+  php-apache:
+    build: ./php
+    container_name: php-apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./php:/var/www/html
+    depends_on:
+      - mysql
+      - python-api
+    networks:
+      - backend
+
+  # 🐍 Python API
+  python-api:
+    build: ./python-api
+    container_name: python-api
+    ports:
+      - "5000:5000"
+    networks:
+      - backend
+
+  # 🛢️ MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: photoexif
+    volumes:
+      - ./db/data:/var/lib/mysql
+    networks:
+      - backend
+
+  # 🧩 phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
