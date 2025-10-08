@@ -10,12 +10,16 @@ import sys
 sys.stdout.reconfigure(encoding='utf-8')  # 確保標準輸出用 UTF-8
 # === 登入參數 ===
 
+# sys.argv[1] = cookie_str
+# sys.argv[2] = token
+# sys.argv[3] = nas_url
+
 all_items = []
 limit = 5000 # 單次請求上限
 offset = 0 # 初始化
 filename = "./all_items.json"
 
-nas_url = "https://t3457990.tw6.quickconnect.to"
+nas_url = sys.argv[3]
 info_api = f"{nas_url}/webapi/entry.cgi"
 
 # === 處理cookie ===

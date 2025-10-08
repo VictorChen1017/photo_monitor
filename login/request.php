@@ -7,6 +7,7 @@ require_once __DIR__ . '/../vendor/autoload.php'; // 依據實際安裝位置而
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 // $_ENV['PYTHON_PATH'] python執行檔位置 
+// $_ENV['NAS_URL'] NAS網址
 
 
 # 這裡填入你的 cookie 字串 和 token 從前端COOKIE介面獲取
@@ -24,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cmd = escapeshellarg($python) . " " 
         . escapeshellarg($script) . " "
         . escapeshellarg($cookie_str) . " " 
-        . escapeshellarg($token);
+        . escapeshellarg($token) . " "
+        . escapeshellarg($_ENV['NAS_URL']);
 
     $output = shell_exec($cmd);
 
