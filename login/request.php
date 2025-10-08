@@ -1,6 +1,14 @@
 <?php
 header("Content-Type: text/html; charset=utf-8");
 
+//  環境變數
+
+require_once __DIR__ . '/../vendor/autoload.php'; // 依據實際安裝位置而定
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+// $_ENV['PYTHON_PATH'] python執行檔位置 
+
+
 # 這裡填入你的 cookie 字串 和 token 從前端COOKIE介面獲取
 # 接收來自login.html的POST請求
 
@@ -11,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo "收到的 Cookie: " . htmlspecialchars($cookie_str) . "\n";
     echo "收到的 Token: " . htmlspecialchars($token) . "\n";
 
-    $python = "C:\\Users\\USER\\anaconda3\\envs\\photo\\python.exe";
+    $python = $_ENV['PYTHON_PATH']; // 從環境變數讀取python執行檔位置
     $script = __DIR__ . DIRECTORY_SEPARATOR . "loadphoto.py"; // 定位此檔案的資料夾
     $cmd = escapeshellarg($python) . " " 
         . escapeshellarg($script) . " "

@@ -1,0 +1,14 @@
+# 不上傳環境設定
+.env
+
+# 不上傳作業系統暫存檔
+.DS_Store
+Thumbs.db
+
+# 不上傳 IDE 編輯器暫存資料
+.vscode/
+.idea/
+
+# 不上傳暫時輸出資料
+*.log
+*.tmp

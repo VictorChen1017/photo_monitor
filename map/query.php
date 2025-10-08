@@ -3,9 +3,19 @@ header("Content-Type: text/html; charset=utf-8");
 
 # 用來連結資料庫，將資料轉成json格式供js leatflet使用
 
+# 讀取環境變數
+
+require_once __DIR__ . '/../vendor/autoload.php'; // 依據實際安裝位置而定
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
+// $_ENV['DB_HOST'] 資料庫位置 這裡使用xampp mysql 預設localhost
+// $_ENV['DB_USER'] 資料庫帳號 
+// $_ENV['DB_PASS'] 資料庫密碼
+// $_ENV['DB_NAME'] 資料庫名稱
 
 # 資料庫連線
-$mysqli = new mysqli("localhost", "root", "Chen1899", "photoexif"); // 修改帳密與DB名稱
+$mysqli = new mysqli($_ENV['DB_HOST'], $_ENV['DB_USER'], $_ENV['DB_PASS'], $_ENV['DB_NAME']);
 if ($mysqli->connect_error) {
     echo "連線失敗\n" . htmlspecialchars("連線失敗: " . $mysqli->connect_error) . "</pre>";
 }
