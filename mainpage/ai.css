@@ -1,0 +1,78 @@
+.chat-container {
+    width: 100%;
+    max-width: 100%;  /* ⭐ 滿版 */
+    padding: 0 24px;  /* ⭐ 預留左右 padding */
+    box-sizing: border-box;
+}
+
+/* 主聊天框 */
+.chatbox {
+    height: 500px;
+    overflow-y: auto;
+    padding: 16px 24px;
+    background: #f7f7f7;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    /* 關鍵：保留換行 + 自動換行 */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    box-sizing: border-box;
+}
+
+/* 訊息泡泡 */
+.bubble {
+    padding: 12px 16px;
+    border-radius: 12px;
+    max-width: 90%;
+
+    /* 更舒服的間距 */
+    line-height: 1.6;
+    font-size: 18px;
+
+    /* 讓 HTML `<br>` 與多行文字正常呈現 */
+    white-space: pre-wrap;
+}
+
+/* 使用者訊息（右側） */
+.bubble.user {
+    background: #d0e7ff;
+    align-self: flex-end;
+    margin-left: auto;
+
+    /* 讓右側泡泡不貼邊 */
+    margin-right: 4px;
+}
+
+/* AI 訊息（左側） */
+.bubble.ai {
+    background: #f0f0f0;
+    align-self: flex-start;
+    margin-right: auto;
+
+    /* 讓左側泡泡不貼邊 */
+    margin-left: 4px;
+}
+
+/* 允許泡泡內部使用 ul/li 呈現 bullet points */
+.bubble.ai ul,
+.bubble.user ul {
+    margin: 8px 0 8px 20px;
+    padding: 0;
+}
+
+.bubble.ai li,
+.bubble.user li {
+    margin-bottom: 6px;
+}
+
+/* 輸入列 */
+.input-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}

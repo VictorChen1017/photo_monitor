@@ -66,7 +66,7 @@ try:
         "offset": offset,
         "limit": 5000,
         "SynoToken": token,
-        "additional": '["gps"]'
+        "additional": '["gps","address"]'
     }
 
     res = requests.get(info_api, cookies=cookies, params=params, verify=False)

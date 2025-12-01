@@ -12,3 +12,6 @@ Thumbs.db
 # 不上傳暫時輸出資料
 *.log
 *.tmp
+
+# 不上傳存放apikey資料夾
+keys/

@@ -32,8 +32,10 @@ if (!$data) {
 // 預備語法 避免SQL Injection
 $stmt = $mysqli->prepare("
     INSERT INTO photos 
-    (id, filename, filesize, time, indexed_time, owner_user_id, folder_id, type, gps_latitude, gps_longitude)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (id, filename, filesize, time, indexed_time, owner_user_id, folder_id, type,
+     gps_latitude, gps_longitude,
+     country_id, city_id, district_id, village_id, route_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       filename=VALUES(filename),
       filesize=VALUES(filesize),
@@ -43,7 +45,12 @@ $stmt = $mysqli->prepare("
       folder_id=VALUES(folder_id),
       type=VALUES(type),
       gps_latitude=VALUES(gps_latitude),
-      gps_longitude=VALUES(gps_longitude)
+      gps_longitude=VALUES(gps_longitude),
+      country_id=VALUES(country_id),
+      city_id=VALUES(city_id),
+      district_id=VALUES(district_id),
+      village_id=VALUES(village_id),
+      route_id=VALUES(route_id)
 ");
 
 // 快速對比現有資料與資料庫，避免重複匯入同時確保同步
@@ -79,16 +86,79 @@ foreach ($data as $row) {
     $gps_lat = $row['additional']['gps']['latitude'] ?? null;
     $gps_lng = $row['additional']['gps']['longitude'] ?? null;
 
-    // 如果資料庫已有此ID → 更新
+    // Address ID 欄位
+    $country_id = $row['additional']['address']['country_id'] ?? null;
+    $city_id = $row['additional']['address']['city_id'] ?? null;
+    $district_id = $row['additional']['address']['district_id'] ?? null;
+    $village_id = $row['additional']['address']['village_id'] ?? null;
+    $route_id = $row['additional']['address']['route_id'] ?? null;
+
+    // === 如果資料庫已有此 ID，先抓 DB 內容比對差異 ===
+    $need_update = true;
+
     if (isset($db_set[$id])) {
+
+        // 查詢資料庫資料
+        // 未來優化可以只比對必要項目
+        $check = $mysqli->prepare("SELECT filename, filesize, time, indexed_time, 
+            owner_user_id, folder_id, type, gps_latitude, gps_longitude,
+            country_id, city_id, district_id, village_id, route_id
+            FROM photos WHERE id = ?");
+        $check->bind_param("i", $id);
+        $check->execute();
+        $res = $check->get_result();
+
+        if ($res && $res->num_rows > 0) {
+            $db_row = $res->fetch_assoc();
+
+            // 欄位逐一比對
+            // 未來優化可以只比對必要項目
+            $compare = [
+                "filename"     => $filename,
+                "filesize"     => $filesize,
+                "time"         => $time,
+                "indexed_time" => $indexed_time,
+                "owner_user_id"=> $owner_user_id,
+                "folder_id"    => $folder_id,
+                "type"         => $type,
+                "gps_latitude" => $gps_lat,
+                "gps_longitude"=> $gps_lng,
+                "country_id"   => $country_id,
+                "city_id"      => $city_id,
+                "district_id"  => $district_id,
+                "village_id"   => $village_id,
+                "route_id"     => $route_id
+            ];
+
+            $need_update = false;
+
+            foreach ($compare as $col => $val) {
+                if ($db_row[$col] != $val) {
+                    $need_update = true;
+                    break;
+                }
+            }
+        }
+
+        // 如果完全沒有變化 → 不更新也不記 update_count
+        if (!$need_update) {
+            unset($db_set[$id]);
+            continue;  
+        }
+
         $update_count++;
+
     } else {
+        // 此 ID 是新的
         $new_count++;
     }
 
-    $stmt->bind_param("isiiiiisds",
+    $stmt->bind_param(
+        "isiiiiisddsssss",
         $id, $filename, $filesize, $time, $indexed_time,
-        $owner_user_id, $folder_id, $type, $gps_lat, $gps_lng
+        $owner_user_id, $folder_id, $type, 
+        $gps_lat, $gps_lng,
+        $country_id, $city_id, $district_id, $village_id, $route_id
     );
     $stmt->execute();
 

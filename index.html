@@ -12,6 +12,10 @@
     <!--  首頁css放這裡 -->
   <link rel="stylesheet" type="text/css" href="./index.css">
   <link rel="stylesheet" type="text/css" href="./aside.css"> 
+  <link rel="stylesheet" type="text/css" href="./mainpage/ai.css"> 
+
+  <!--   自訂js 尚未建立 -->
+  <script src="./mainpage/ai.js"></script> 
 
 </head>
 <body>
@@ -30,9 +34,21 @@
     </script>
 
     <div id="db_container" class="content_container">
-        <h2>首頁</h2>
-        <p>這是首頁的內容區域。</p>
-        <!-- 儀錶板的其他內容可以放在這裡 -->
+
+        <div class="chat-container">
+
+            <h2>AI 回憶摘要小幫手</h2>
+
+            <!-- 聊天訊息框 -->
+            <div id="chatbox" class="chatbox"></div>
+
+            <!-- 輸入區 -->
+            <div class="input-row">
+                <input id="prompt" type="text" class="form-control" placeholder="例如：請幫我找 2025 年 1 月在高雄的回憶摘要…">
+                <button id="send" class="btn btn-primary">送出</button>
+            </div>
+
+        </div>
 
 
     </div>
