@@ -107,37 +107,60 @@ def reply(system="請用台灣習慣的中文回覆。",
     
     system_query = """
 
-    你的職責是根據使用者的需求，辨識出他想要查詢的時間與地點資訊。
+        你是一個照片資料庫查詢助手，你的職責是精準地從使用者請求中提取「日期」與「地點」資訊。
 
-    你有一個 tool 工具，可依特定格式搜尋照片資料庫，參數如下：
-    - start_date：搜尋起始日期（必填）
-    - end_date：搜尋結束日期（可選，若缺省則默認為今天）
-    - location：地點，可能是一個縣市（臺北市、高雄市等）或一個鄉鎮市區（大安區、中山區）
-    注意：不能把縣市與鄉鎮合併成一串字，例如「台北市大安區」，否則會找不到資料。
+        1. **日期提取規則：**
+        - 提取「起始日期 (start_date)」和「結束日期 (end_date)」，兩者都必須使用 'YYYY-MM-DD' 格式。
+        - 如果使用者只提供一個日期，該日期同時作為 start_date 和 end_date。
+        - 如果使用者只說「某月」或「某年」，請盡量將其解析為該期間的第一天到最後一天。
+        - 如果使用者沒有提供「結束日期」，請將今天的日期作為 end_date。
 
-    你的第一步任務：根據使用者疑問或請求，自動判斷時間與地點；
-    若可以查詢資料，就呼叫 search_photos 工具。
+        2. **地點提取規則：**
+        - 提取地點 (location)，地點應為**單一**縣市或鄉鎮市區名稱，例如「臺北市」或「大安區」。
+        - **禁止**將縣市與鄉鎮合併（例如「台北市大安區」）。
 
+        3. **工具呼叫：**
+        - 你的唯一工具是 `search_photos`。
+        - 成功提取參數後，請**立即且僅呼叫** `search_photos` 工具，不需任何額外的文字解釋。
+        - 如果無法提取到任何日期資訊，請以中文回覆使用者，要求提供更詳細的日期。
 
-    如果你發現呼叫 search_photos 工具候傳來是空值[] ，則回覆使用者需要更詳細的資訊
+        範例：
+        使用者：我想找去年十月在臺北市的照片
+        應呼叫：search_photos(start_date="2024-10-01", end_date="2024-10-31", location="臺北市")
+
+        使用者：上週在信義區的照片
+        應呼叫：search_photos(start_date="2025-12-06", end_date="2025-12-12", location="信義區")
 
     """
 
     system_text = """
 
-    你的第二步任務：根據工具回傳的照片資料(有unix時間戳、城市、鄉鎮市區、村里、路名等等)，
-    將這些資料轉換為該使用者的行動軌跡，轉譯成一段具有敘事性的回憶摘要，而非僅羅列地名。
+        你的職責是分析工具回傳的 JSON 照片資料，並將其轉化為一份溫暖、個人化的「回憶摘要」。
 
-    以下是範例，可用更具溫度，不須那麼制式化的照寫：
-    「在秋天微涼的十月，我沿著內灣線的小站與山
-    城漫遊，之後回到台北的街區生活，你最常造訪的地方是(地名1)的(村里1).....，去……這一個月你拍了許多照片，感覺是個多采多姿的生活呢」
+        1. **數據分析：**
+        - 分析 JSON 數據中的 `city_id`、`district_id`、`village_id` 等地點資訊。
+        - **統計**每個村里 (`village_id`) 及其所在鄉鎮市區 (`district_id`) 的照片數量（出現頻率）。
+        - **選取**照片數量最多的前五個地點作為核心軌跡。
+
+        2. **摘要生成：**
+        - 將這些核心地點轉譯成一段流暢、情感豐富的中文段落。
+        - 摘要應包含以下要素：
+            - **總結**：總共找到了多少張照片，涵蓋的日期範圍。
+            - **核心軌跡**：你主要在哪幾個鄉鎮或村里活動。
+            - **溫馨推測**：根據地點資訊（例如：大安區、信義區、某路名），想像使用者可能拍攝了什麼，並用**具溫度且富創意的文字**呈現。
+            - **結尾**：一句期待下次回憶的結語。
+
+        3. **空值處理：**
+        - 如果傳入的 JSON 數據為空（例如：`{"results": []}`），請用中文回覆使用者：「抱歉，我在您指定的日期和地點範圍內沒有找到任何照片。請試試不同的日期或地點。」
+
+        請以一個專業且充滿人情味的語氣進行回覆。
 
     """
 
     client = ai.Client()
 
     messages = [
-        {"role": "system", "content": system_query}, # system ai提示詞
+        {"role": "system", "content": system_query},
         {"role": "user", "content": prompt}
     ]
 
@@ -145,17 +168,24 @@ def reply(system="請用台灣習慣的中文回覆。",
 
     step1 = client.chat.completions.create(
         model=f"{provider}:{model}",
-        messages=messages,
-        tools=[search_photos], 
-        max_turns=3
+        messages=messages
+        #tools=[search_photos], 
     )
+    try: # 執行沒問題
+        
+        tool_result_dict= eval(step1.choices[0].message.content) # 代替執行工具的功能 輸出為一字典
+        tool_result_json = json.dumps(tool_result_dict) # 將傳遞從json變成字典 確保可以順利當作模型輸入
+        #print("順利執行搜尋")
+        
+    except:
+        #print("模型輸出非程式碼")
+        return step1.choices[0].message.content
 
-    tool_result_str = step1.choices[0].message.content
 
     # 敘事輸出
     step2_messages = [
         {"role": "system", "content": system_text},
-        {"role": "user", "content": tool_result_str}
+        {"role": "user", "content": tool_result_json}
     ]
 
     step2 = client.chat.completions.create(
@@ -163,7 +193,9 @@ def reply(system="請用台灣習慣的中文回覆。",
         messages=step2_messages
     )
 
-    return tool_result_str, step2.choices[0].message.content
+    #return tool_result_str, step2.choices[0].message.content
+    #print("第二階段執行完成")
+    return step2.choices[0].message.content
 
 def main():
 
@@ -174,6 +206,7 @@ def main():
     
     # 2. 接收 PHP 傳來的 prompt
     prompt = sys.argv[1]
+
 
 
     # 3. 呼叫你的 AI function
