@@ -50,7 +50,6 @@ def search_photos(start_date: str, end_date: str, location: str = ""):
     cursor = conn.cursor(dictionary=True)
 
     # 工具的輸入為日期 例如"2024-10-01" 必須在SQL中換成字串
-    # 工具的輸入為日期 例如"2024-10-01" 必須在SQL中換成字串
     sql = """
         SELECT 
             filename,

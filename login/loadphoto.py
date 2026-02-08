@@ -47,6 +47,23 @@ token = sys.argv[2]
 cookies = cookie_str_to_dict(cookie_str)
 print(cookies)
 
+# 未來建議分開，先暫時用json存cookie 給其他分頁用
+
+session_filename = "./session_config.json"
+session_data = {
+    "cookies": cookies,
+    "token": token,
+    "nas_url": nas_url
+}
+
+try:
+    with open(session_filename, "w", encoding="utf-8") as sf:
+        json.dump(session_data, sf, ensure_ascii=False, indent=2)
+    # print(f"Session 已儲存至 {session_filename}") # 測試用，正式執行建議只輸出最後的 JSON
+except Exception as e:
+    print(json.dumps({"status": "error", "message": f"無法儲存 Session 檔案: {str(e)}"}))
+    sys.exit(1)
+
 # === 檢查資料是否存在 ===
 if os.path.exists(filename):
     os.remove(filename)
@@ -66,7 +83,7 @@ try:
         "offset": offset,
         "limit": 5000,
         "SynoToken": token,
-        "additional": '["gps","address"]'
+        "additional": '["gps","address","thumbnail"]'
     }
 
     res = requests.get(info_api, cookies=cookies, params=params, verify=False)

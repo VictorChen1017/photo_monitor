@@ -34,8 +34,8 @@ $stmt = $mysqli->prepare("
     INSERT INTO photos 
     (id, filename, filesize, time, indexed_time, owner_user_id, folder_id, type,
      gps_latitude, gps_longitude,
-     country_id, city_id, district_id, village_id, route_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     country_id, city_id, district_id, village_id, route_id,cache_key,unit_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       filename=VALUES(filename),
       filesize=VALUES(filesize),
@@ -50,7 +50,9 @@ $stmt = $mysqli->prepare("
       city_id=VALUES(city_id),
       district_id=VALUES(district_id),
       village_id=VALUES(village_id),
-      route_id=VALUES(route_id)
+      route_id=VALUES(route_id),
+      cache_key = VALUES(cache_key),
+      unit_id = VALUES(unit_id)
 ");
 
 // 快速對比現有資料與資料庫，避免重複匯入同時確保同步
@@ -92,6 +94,8 @@ foreach ($data as $row) {
     $district_id = $row['additional']['address']['district_id'] ?? null;
     $village_id = $row['additional']['address']['village_id'] ?? null;
     $route_id = $row['additional']['address']['route_id'] ?? null;
+    $cache_key = $row['additional']['thumbnail']['cache_key'];
+    $unit_id  = $row['additional']['thumbnail']['unit_id'];
 
     // === 如果資料庫已有此 ID，先抓 DB 內容比對差異 ===
     $need_update = true;
@@ -102,7 +106,7 @@ foreach ($data as $row) {
         // 未來優化可以只比對必要項目
         $check = $mysqli->prepare("SELECT filename, filesize, time, indexed_time, 
             owner_user_id, folder_id, type, gps_latitude, gps_longitude,
-            country_id, city_id, district_id, village_id, route_id
+            country_id, city_id, district_id, village_id, route_id,cache_key,unit_id
             FROM photos WHERE id = ?");
         $check->bind_param("i", $id);
         $check->execute();
@@ -127,7 +131,9 @@ foreach ($data as $row) {
                 "city_id"      => $city_id,
                 "district_id"  => $district_id,
                 "village_id"   => $village_id,
-                "route_id"     => $route_id
+                "route_id"     => $route_id,
+                "cache_key"   => $cache_key,
+                "unit_id" =>  $unit_id
             ];
 
             $need_update = false;
@@ -154,11 +160,11 @@ foreach ($data as $row) {
     }
 
     $stmt->bind_param(
-        "isiiiiisddsssss",
+        "isiiiiisddsssssss",
         $id, $filename, $filesize, $time, $indexed_time,
         $owner_user_id, $folder_id, $type, 
         $gps_lat, $gps_lng,
-        $country_id, $city_id, $district_id, $village_id, $route_id
+        $country_id, $city_id, $district_id, $village_id, $route_id,$cache_key,$unit_id 
     );
     $stmt->execute();
 

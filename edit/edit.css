@@ -1,0 +1,120 @@
+/* 讓容器滿版 */
+#filter-container {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+/* 強化 Card 視覺 */
+#filter-container .card {
+    border: none;
+    border-radius: 12px;
+    background-color: #ffffff;
+    /* 搭配你 dashboard 的陰影風格 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+#filter-container h5 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* 調整表單元件細節 */
+#filter-container .form-label {
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+#filter-container .form-control, 
+#filter-container .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#filter-container .form-control:focus, 
+#filter-container .form-select:focus {
+    border-color: #9A3033; /* 參考你 dashboard.js 中的配色 */
+    box-shadow: 0 0 0 0.2rem rgba(154, 48, 51, 0.15);
+}
+
+/* 搜尋按鈕美化 */
+#btn-search {
+    background-color: #9A3033; /* 統一配色 */
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: background-color 0.2s;
+}
+
+#btn-search:hover {
+    background-color: #7d2629;
+}
+
+/* 照片選單美化 */
+#photo-selector {
+    height: 250px; /* 固定高度，避免照片過多時撐開太長 */
+    font-family: 'Consolas', 'Monaco', monospace; /* 使用等寬字體讓 ID 與日期對齊 */
+    background-color: #f8f9fa;
+}
+
+#photo-selector option {
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+#photo-selector option:checked {
+    background-color: #9A3033 !important;
+    color: white;
+}
+
+/* 確保地圖容器有明確高度，否則會消失 */
+#map_container {
+    width: 100%;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+#map {
+    width: 100%;
+    height: 500px; /* 必須設定高度 */
+    border-radius: 8px;
+    z-index: 1; /* 確保不會被其他元件遮擋 */
+}
+
+/* 工具欄樣式 */
+#map_toolbar {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#saveBtn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#saveBtn:hover {
+    background-color: #218838;
+}
+
+#coordinates {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #666;
+}
