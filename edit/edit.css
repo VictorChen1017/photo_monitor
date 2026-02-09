@@ -110,11 +110,24 @@
     background-color: #218838;
 }
 
-#coordinates {
-    margin-top: 10px;
-    padding: 10px;
-    background: #f8f9fa;
+
+#resetBtn {
+    background-color: rgb(141, 141, 141);
+    color: white;
+    border: none;
+    padding: 8px 20px;
     border-radius: 6px;
-    font-size: 0.9rem;
-    color: #666;
+    cursor: pointer;
+}
+
+#coordinates {
+    flex: 1; /* 編輯面板佔較小空間 */
+    background: #fff;
+    border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.extra-small {
+    font-size: 0.75rem;
 }

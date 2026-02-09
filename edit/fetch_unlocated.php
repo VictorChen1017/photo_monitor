@@ -23,7 +23,7 @@ $end_ts = strtotime($end_date . " 23:59:59");
 //2. 動態拚接sql
 
 // 基礎 SQL
-$sql = "SELECT id, filename, time, cache_key, unit_id, type FROM photos 
+$sql = "SELECT id, filename, time, cache_key, unit_id,gps_latitude,gps_longitude,type FROM photos 
         WHERE time >= ? AND time <= ? AND time > 0";
 
 // 地點篩選邏輯

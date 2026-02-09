@@ -95,10 +95,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.forEach(photo => {
                     const opt = document.createElement('option');
                     opt.value = photo.unit_id;
-                    opt.text = `[${photo.formatted_date}] ${photo.filename}`;
+
+                    // 選取資料時間
+                    opt.time = photo.time;
+
+                    const date = new Date(parseInt(opt.time) * 1000);
+                    const dateString = date.toISOString().slice(0, 16);
+    
+                    opt.text = `[${dateString}] ${photo.filename}`;
+
+                    // 儲存地理資訊
+                    opt.dataset.lat = photo.gps_latitude; 
+                    opt.dataset.lng = photo.gps_longitude;
+                    
                     // 儲存路徑資訊供 API 使用 (假設你資料庫有存 path)
                     opt.filename = photo.filename
                     opt.dataset.cache_key = photo.cache_key;
+                    
                     selector.appendChild(opt);
                 });
             })
@@ -132,35 +145,35 @@ document.addEventListener('DOMContentLoaded', function () {
     initSession();
 
     document.getElementById('photo-selector').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const unitId = selectedOption.value;
-    const cache_key = selectedOption.dataset.cache_key;
+        const selectedOption = this.options[this.selectedIndex];
+        const unitId = selectedOption.value;
+        const cache_key = selectedOption.dataset.cache_key;
 
-    console.log(unitId);
-    console.log(cache_key);
-    
-    const previewBody = document.querySelector('#photo-container .card-body');
-    
-    // 顯示讀取中...
-    previewBody.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
+        console.log(unitId);
+        console.log(cache_key);
+        
+        const previewBody = document.querySelector('#photo-container .card-body');
+        
+        // 顯示讀取中...
+        previewBody.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
 
-    // 呼叫 PHP 代理，並傳入 unitId 與 cacheKey
-    const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}`;
-    
-    const img = new Image();
-    img.className = "img-fluid shadow-sm rounded";
-    img.style.maxHeight = "400px";
-    
-    img.onload = () => {
-        previewBody.innerHTML = '';
-        previewBody.appendChild(img);
-    };
-    
-    img.onerror = () => {
-        previewBody.innerHTML = '<div class="text-danger small">後端代理抓取失敗，請檢查 NAS 連線</div>';
-    };
+        // 呼叫 PHP 代理，並傳入 unitId 與 cacheKey
+        const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}`;
+        
+        const img = new Image();
+        img.className = "img-fluid shadow-sm rounded";
+        img.style.maxHeight = "400px";
+        
+        img.onload = () => {
+            previewBody.innerHTML = '';
+            previewBody.appendChild(img);
+        };
+        
+        img.onerror = () => {
+            previewBody.innerHTML = '<div class="text-danger small">後端代理抓取失敗，請檢查 NAS 連線</div>';
+        };
 
-    img.src = proxyUrl;
-});
+        img.src = proxyUrl;
+    });
 
 });

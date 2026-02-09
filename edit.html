@@ -63,20 +63,58 @@
 
     <div id="map_container">
 
-
-
-        <h2 id = "loading">選擇地圖上一點添加地理位置</h2>
+        <h2 id="loading" class="h5 fw-bold mb-3" style="color: #333;">
+            <i class="fas fa-map-marker-alt me-2" style="color: #9A3033;"></i>選擇地圖上一點添加地理位置
+        </h2>
 
         <div id="map"></div>
-        
-        
-        <div id="map_toolbar">
-            <button id="saveBtn">儲存</button>
 
+        <div id="coordinates" class="card shadow-sm border-0 mt-3">
+
+            
+            <div class="card-body p-4">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label class="form-label">照片原始經緯度座標</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">Lat</span>
+                            <input type="text" id="photo-lat" class="form-control" placeholder="讀取照片獲取" readonly>
+                            <span class="input-group-text bg-light border-end-0">Lng</span>
+                            <input type="text" id="photo-lng" class="form-control" placeholder="讀取照片獲取" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">編輯經緯度座標</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">Lat</span>
+                            <input type="text" id="edit-lat" class="form-control" placeholder="點擊地圖獲取" readonly>
+                            <span class="input-group-text bg-light border-end-0">Lng</span>
+                            <input type="text" id="edit-lng" class="form-control" placeholder="點擊地圖獲取" readonly>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">拍攝時間</label>
+                        <input type="datetime-local" id="edit-time" class="form-control">
+                        <div class="form-text extra-small text-muted mt-2">
+                            <i class="fas fa-info-circle me-1"></i>提示：若不修改則保留原時間
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" id="saveBtn">
+                            <i class="fas fa-save me-1"></i> 儲存變更
+                        </button>
+                        <button type="button" id="resetBtn" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo me-1"></i> 取消重設
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="edit-status" class="card-footer small text-center py-2 d-none">
+                </div>
         </div>
-
-        <div id="coordinates">位置編輯頁面</div>
-
     </div>
 
 
