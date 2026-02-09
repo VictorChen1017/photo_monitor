@@ -2,45 +2,68 @@
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('filter-container');
 
-    // 1. 建立簡易介面 HTML
-    container.innerHTML = `
-        <div class="card p-4 shadow-sm">
-                    <h5>📸 無座標照片篩選</h5>
-                    <div class="row g-3">
-                        <div class="col-sm-12 col-md-5">
-                            <label class="form-label small">開始日期</label>
-                            <input type="date" id="filter-start" class="form-control" value="2026-01-01">
-                        </div>
-                        <div class="col-sm-12 col-md-5">
-                            <label class="form-label small">結束日期</label>
-                            <input type="date" id="filter-end" class="form-control" value="${new Date().toISOString().split('T')[0]}">
-                        </div>
-                        <div class="col-sm-12 col-md-2 d-flex align-items-end">
-                            <button id="btn-search" class="btn btn-primary w-100">
-                                <i class="fas fa-search me-1"></i> 搜尋
-                            </button>
-                        </div>
+    // 1. 增加「地點狀態」與「檔案類型」篩選器
+        container.innerHTML = `
+            <div class="card p-4 shadow-sm">
+                <h5>📸 照片進階篩選與編輯</h5>
+                <div class="row g-3">
+                    <div class="col-sm-12 col-md-3">
+                        <label class="form-label small">開始日期</label>
+                        <input type="date" id="filter-start" class="form-control" value="2026-01-01">
                     </div>
-                    <div id="result-status" class="small mt-3 mb-2 text-secondary font-italic">
-                        <i class="fas fa-info-circle me-1"></i> 請設定日期並點擊搜尋
+                    <div class="col-sm-12 col-md-3">
+                        <label class="form-label small">結束日期</label>
+                        <input type="date" id="filter-end" class="form-control" value="${new Date().toISOString().split('T')[0]}">
                     </div>
-                    <select id="photo-selector" class="form-select" size="10">
-                        <option value="" disabled>-- 尚未搜尋 --</option>
-                    </select>
-
-                    <div id="photo-container" class="card shadow-sm">
-                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
-                        </div>
-                        <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 400px; background: #fdfdfd;">
-                            <div id="preview-placeholder" class="text-center text-muted">
-                                <i class="fas fa-image fa-3x mb-2"></i><br>請從上方清單選擇照片
-                            </div>
-                        </div>
+                    <div class="col-sm-12 col-md-3">
+                        <label class="form-label small">地點狀態</label>
+                        <select id="filter-location" class="form-select">
+                            <option value="all">全部 (包含有/無座標)</option>
+                            <option value="none" selected>僅顯示無座標</option>
+                            <option value="exist">僅顯示已有座標</option>
+                        </select>
                     </div>
-
+                    <div class="col-sm-12 col-md-3">
+                        <label class="form-label small">檔案類型</label>
+                        <select id="filter-type" class="form-select">
+                            <option value="all">全部類型</option>
+                            <option value="photo">照片 (Photo)</option>
+                            <option value="video">影片 (Video)</option>
+                            <option value="live">原況照片 (Live)</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-12 col-md-12 d-flex justify-content-end">
+                        <button id="btn-search" class="btn btn-primary px-5">
+                            <i class="fas fa-search me-1"></i> 執行搜尋
+                        </button>
+                    </div>
                 </div>
-    `;
+                <div id="result-status" class="small mt-3 mb-2 text-secondary font-italic">
+                    <i class="fas fa-info-circle me-1"></i> 請設定條件並點擊搜尋
+                </div>
+                <select id="photo-selector" class="form-select" size="10">
+                    <option value="" disabled>-- 尚未搜尋 --</option>
+                </select>
 
+                <div id="photo-container" class="card shadow-sm">
+
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+
+                        </div>
+
+                        <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 400px; background: #fdfdfd;">
+
+                            <div id="preview-placeholder" class="text-center text-muted">
+
+                                <i class="fas fa-image fa-3x mb-2"></i><br>請從上方清單選擇照片
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+        `;
     const selector = document.getElementById('photo-selector');
     const btnSearch = document.getElementById('btn-search');
     const statusText = document.getElementById('result-status');
@@ -49,21 +72,26 @@ document.addEventListener('DOMContentLoaded', function () {
     btnSearch.addEventListener('click', function() {
         const start = document.getElementById('filter-start').value;
         const end = document.getElementById('filter-end').value;
+        const location = document.getElementById('filter-location').value;
+        const type = document.getElementById('filter-type').value
 
         statusText.innerText = "查詢中...";
         selector.innerHTML = '<option value="">載入中...</option>';
 
-        fetch(`./edit/fetch_unlocated.php?start=${start}&end=${end}`)
+        // 串接新的篩選參數
+        const url = `./edit/fetch_unlocated.php?start=${start}&end=${end}&location=${location}&type=${type}`;
+
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 selector.innerHTML = ''; // 清空
                 if (data.length === 0) {
-                    statusText.innerText = "此區間無遺漏座標的照片。";
+                    statusText.innerText = "找不到符合條件的照片。";
                     selector.innerHTML = '<option value="">無符合資料</option>';
                     return;
                 }
 
-                statusText.innerText = `找到 ${data.length} 張未定位照片`;
+                statusText.innerText = `找到 ${data.length} 張符合條件的照片`;
                 data.forEach(photo => {
                     const opt = document.createElement('option');
                     opt.value = photo.unit_id;
