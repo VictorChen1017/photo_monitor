@@ -1,0 +1,19 @@
+
+/* 主頁中處理登錄與每日一圖的section */
+
+/* 訊息呈現區塊的基本樣式 */
+#result {
+    min-height: 40px; /* 預留高度，防止內容彈跳 */
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    transition: all 0.3s ease; /* 增加過渡動畫 */
+    font-size: 0.95rem;
+}
+
+/* 載入中的旋轉圖示動畫（可選） */
+.spinner-border-sm {
+    margin-right: 8px;
+}
+
+/* 也可以直接利用 Bootstrap 的 alert 類別，就不需要額外寫太多 CSS */

@@ -13,9 +13,11 @@
   <link rel="stylesheet" type="text/css" href="./index.css">
   <link rel="stylesheet" type="text/css" href="./aside.css"> 
   <link rel="stylesheet" type="text/css" href="./mainpage/ai.css"> 
+  <link rel="stylesheet" type="text/css" href="./mainpage/mainpage.css"> 
 
   <!--   自訂js 尚未建立 -->
-  <script src="./mainpage/ai.js"></script> 
+  <script src="./mainpage/ai.js"></script>   <!--   處理ai助手 -->
+  <script src="./mainpage/mainpage_login.js"></script>  <!--   處理登錄介面 -->
 
 </head>
 <body>
@@ -33,7 +35,33 @@
             });
     </script>
 
-    <div id="db_container" class="content_container">
+    <div id="db_container" class="content_container w-100">
+
+        <section id="login_section" class="border-bottom py-4 px-3">
+            <div class="container-fluid">
+                <h3><i class="bi bi-shield-lock"></i> Synology 身份驗證</h3>
+
+                 <!-- 登錄表格 -->
+                <form id="loginForm" class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label">Cookie String</label>
+                        <textarea name="cookie_str" id="cookie_str" class="form-control" rows="1" placeholder="貼上 Cookie..." required></textarea>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Token</label>
+                        <input type="text" name="token" id="token" class="form-control" placeholder="Token" required />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">驗證連線</button>
+                    </div>
+                </form>
+                <div class="result" id="result"></div>
+            </div>
+        </section>
+
+        <hr class="m-0">
+
+        <section id="ai_section" class="py-4 px-3">
 
         <div class="chat-container">
 
@@ -49,6 +77,7 @@
             </div>
 
         </div>
+        </section>
 
 
     </div>

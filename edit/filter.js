@@ -30,8 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     <div id="photo-container" class="card shadow-sm">
                         <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
-                            <span id="photo-info" class="small text-primary fw-bold">尚未選取照片</span>
-                            <span class="badge bg-secondary">預覽視窗</span>
                         </div>
                         <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 400px; background: #fdfdfd;">
                             <div id="preview-placeholder" class="text-center text-muted">
