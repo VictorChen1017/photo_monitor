@@ -15,3 +15,6 @@ Thumbs.db
 
 # 不上傳存放apikey資料夾
 keys/
+
+# 不上傳儲存的登錄資料
+session_config.json

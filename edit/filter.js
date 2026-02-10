@@ -144,36 +144,51 @@ document.addEventListener('DOMContentLoaded', function () {
         // 執行初始化
     initSession();
 
+    // 外部宣告計時器變數，用於防抖設計，確保它在多次事件觸發間能被共享
+    let photoDebounceTimer = null;
+
     document.getElementById('photo-selector').addEventListener('change', function() {
+
+        // 選單切換時，清除上一次設定的計時器
+        clearTimeout(photoDebounceTimer);
+
+
         const selectedOption = this.options[this.selectedIndex];
         const unitId = selectedOption.value;
         const cache_key = selectedOption.dataset.cache_key;
+        const previewBody = document.querySelector('#photo-container .card-body');
 
         console.log(unitId);
         console.log(cache_key);
         
-        const previewBody = document.querySelector('#photo-container .card-body');
-        
-        // 顯示讀取中...
-        previewBody.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
+        // 設定新計時器，延遲執行載入邏輯
+        photoDebounceTimer = setTimeout(() => {
 
-        // 呼叫 PHP 代理，並傳入 unitId 與 cacheKey
-        const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}`;
-        
-        const img = new Image();
-        img.className = "img-fluid shadow-sm rounded";
-        img.style.maxHeight = "400px";
-        
-        img.onload = () => {
-            previewBody.innerHTML = '';
-            previewBody.appendChild(img);
-        };
-        
-        img.onerror = () => {
-            previewBody.innerHTML = '<div class="text-danger small">後端代理抓取失敗，請檢查 NAS 連線</div>';
-        };
+            // 顯示讀取中...
+            previewBody.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
 
-        img.src = proxyUrl;
+            // 呼叫 PHP 代理，並傳入 unitId 與 cacheKey
+            const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}`;
+            
+            const img = new Image();
+            img.className = "img-fluid shadow-sm rounded";
+            img.style.maxHeight = "400px";
+            
+            img.onload = () => {
+                previewBody.innerHTML = '';
+                previewBody.appendChild(img);
+            };
+            
+            img.onerror = () => {
+                previewBody.innerHTML = '<div class="text-danger small">後端代理抓取失敗，請檢查 NAS 連線</div>';
+            };
+
+            img.src = proxyUrl;
+
+
+        }, 250); // 建議設定在 250~350ms 之間，這是在流暢度與效能間的最佳平衡
+        
+        
     });
 
 });

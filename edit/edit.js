@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
 
 
 
+        // 處理點擊編輯地理位置
+
+        
 
         map.on('click', function(e) {
             document.getElementById('edit-lat').value = e.latlng.lat.toFixed(6);
@@ -48,15 +51,23 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
                 map.removeLayer(currentMarker);
             }
             
+
+            var greenIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
             // 3. 建立新圖標並加到地圖上
                 // 你可以自訂 Marker 的顏色或使用預設
-            currentMarker = L.marker(e.latlng).addTo(map)
+            currentMarker = L.marker(e.latlng, { icon: greenIcon }).addTo(map)
                 .bindPopup(`<b>新位置</b>`)
                 .openPopup();
             });
 
-
-
+        // 處理切換選單時更新照片地理位置
        document.getElementById('photo-selector').addEventListener('change', function() {
             const selected = this.options[this.selectedIndex];
 
@@ -103,6 +114,67 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
                 document.getElementById('photo-lat').value = '';
                 document.getElementById('photo-lng').value = '';
             }
+
+            });
+
+
+            // 處理提交資料
+            document.getElementById('saveBtn').addEventListener('click', function() {
+
+                // 連結photo-selector的結果(獲取unid_id、若有需要添加cache_key)
+                const selector = document.getElementById('photo-selector');
+                const selectedOpt = selector.options[selector.selectedIndex];
+
+            // 取得各個欄位的數值
+                const photoLat = document.getElementById('photo-lat').value; // 原始座標
+                const photoLng = document.getElementById('photo-lng').value;
+                const editLat = document.getElementById('edit-lat').value;   // 編輯後新座標
+                const editLng = document.getElementById('edit-lng').value;
+                const editTime = document.getElementById('edit-time').value;
+
+            // 建立傳輸物件
+                const updateData = {
+                    unit_id: selectedOpt.value,
+                    // 如果有新座標就用新的，否則維持原始座標
+                    lat: editLat || photoLat, // JS語法若左邊有值優先取左，若無則取右
+                    lng: editLng || photoLng,
+                    time: editTime
+                };
+
+                // 檢查資訊是否缺失
+                console.log(updateData)
+
+                // 邏輯檢查
+
+                // 拍攝時間(不太可能沒有)
+                if (!updateData.time) {
+                    alert("請確認拍攝時間！");
+                    return;
+                }
+
+                // 檢查座標 (如果原始與編輯後皆為空，代表這張照片完全沒有地理資訊)
+                // 這裡您可以根據需求決定：是否允許完全沒有座標的照片儲存 (僅改時間)
+                if (!updateData.lat || !updateData.lng) {
+                    const confirmSave = confirm("偵測到經緯度資訊缺失，您確定僅更新拍攝時間嗎？");
+                    if (!confirmSave) return;
+                }
+
+                // 執行傳輸
+                fetch('./edit/update_photo_info.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if(result.status === 'success') {
+                        alert("✅ 儲存成功！已更新資料庫資訊。");
+                        // 可在此重新整理列表或更新介面狀態
+                    } else {
+                        alert("❌ 儲存失敗：" + result.message);
+                    }
+                })
+                .catch(err => console.error("傳輸錯誤:", err));
 
             });
 
