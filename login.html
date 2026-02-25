@@ -35,83 +35,72 @@
   <div id="login_container" class="content_container">
 
     <h2>輸入 Synology 登入資訊</h2>
-    <form id="loginForm">
-      <label>
-        Cookie String:
-        <textarea name="cookie_str" id="cookie_str" required></textarea>
-      </label>
-
-      <label>
-        Token:
-        <input type="text" name="token" id="token" required />
-      </label>
-
-      <button type="submit">送出</button>
-    </form>
-    <div class="result" id="result"></div>
 
     <button type="button" id="importBtn">載入資料庫</button>
-    <div class="result" id="importResult"></div>
+    <div class="result" id="result">連接NAS狀態</div>
+    <div class="result" id="importResult">同步資料庫狀態</div>
 
-    
 
-    <script>
-
-      // 該表單輸入cookie及token的參數 若未來需要擴充，可以加入synology的帳號與密碼
-
-      document.getElementById("loginForm").addEventListener("submit", function(e) {
-        e.preventDefault(); // 阻止表單原始送出
-
-        
-
-        const cookie_str = document.getElementById("cookie_str").value;
-        const token = document.getElementById("token").value;
-
-        // 先顯示等待提示
-        document.getElementById("result").innerText = "正在爬取照片中，請稍後...";
-
-        // 使用 fetch (比舊的XMLHttpRequest更簡潔)
-        fetch("login/request.php", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: `cookie_str=${encodeURIComponent(cookie_str)}&token=${encodeURIComponent(token)}`
-        })
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById("result").innerText = data;
-        })
-        .catch(error => {
-          document.getElementById("result").innerText = "錯誤：" + error;
-        });
-      });
-    </script>
 
     <script>
     // 該段落用於匯入資料庫，執行import.php，並將結果顯示在頁面上
-    // 監聽載入資料庫按鈕
+
+        function startDatabaseUpdate() {
+        const resultElement = document.getElementById("result");
+        const importElement = document.getElementById("importResult");
+
+        resultElement.innerText = "連接NAS狀態：正在執行 Python 抓取 (request.php)...";
+        importElement.innerText = "同步資料庫狀態：等待中 大約需要等候十幾秒...";
+
+        // 1. 先執行 request.php (抓取資料)
+        fetch("login/request.php", {
+            method: "GET",
+            headers: { "Cache-Control": "no-cache" }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Request.php 執行失敗");
+            return response.text();
+        })
+        .then(data => {
+            // 顯示第一個腳本的輸出
+            resultElement.innerText = data;
+            
+            // 2. 確認成功後，接著執行 import.php (匯入資料)
+            importElement.innerText = "Python 執行成功，正在匯入資料庫 (import.php)...";
+            
+            return fetch("login/import.php", { method: "POST" });
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Import.php 執行失敗");
+            return response.json();
+        })
+        .then(data => {
+            // 3. 顯示最終匯入結果
+            importElement.innerText = 
+                `✅ 匯入完成，目前共 ${data.total} 筆資料\n` +
+                `✅ 更新完成，本次更新 ${data.new} 筆資料\n` +
+                `✅ 刪除 ${data.deleted} 筆資料\n` +
+                `🕒 最後更新時間 ${data.last_update_time}`;
+
+            window.importStats = {
+                total: data.total,
+                updated: data.new
+            };
+            console.log("儀表板用變數：", window.importStats);
+        })
+        .catch(error => {
+            // 捕捉流程中任何一個環節的錯誤
+            console.error("流程發生錯誤:", error);
+            importElement.innerText = "❌ 執行中斷：" + error.message;
+        });
+    }
+ 
     document.getElementById("importBtn").addEventListener("click", function() {
       document.getElementById("importResult").innerText = "正在匯入資料庫，請稍候...";
 
-      fetch("login/import.php", { method: "POST" })
-        .then(response => response.json()) // 接收 JSON
-        .then(data => {
-          // 顯示結果
-          document.getElementById("importResult").innerText =
-            `✅ 匯入完成，目前共 ${data.total} 筆資料\n✅ 更新完成，本次更新 ${data.new} 筆資料\n✅ 刪除 ${data.deleted} 筆資料\n🕒 最後更新時間 ${data.last_update_time}`;
+      // 點擊資料庫後的處理邏輯
+      startDatabaseUpdate()
 
-          // 儲存變數 (可供儀表板使用)
-          window.importStats = {
-            total: data.total,
-            updated: data.new
-          };
-
-          console.log("儀表板用變數：", window.importStats);
-        })
-        .catch(error => {
-          document.getElementById("importResult").innerText = "錯誤：" + error;
-        });
     });
   </script>
   </div>

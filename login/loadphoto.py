@@ -32,7 +32,10 @@ if len(sys.argv) < 3:
 # 瀏覽器字串處理
 def cookie_str_to_dict(cookie_str: str) -> dict:
     cookies = {}
-    for item in cookie_str.split("; "):  # 以 "; " 分隔
+
+    items = cookie_str.split(";")
+
+    for item in items:  # 以 "; " 分隔
         if "=" in item:
             key, value = item.split("=", 1)  # 只切第一個 "="
             cookies[key] = value

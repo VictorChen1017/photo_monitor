@@ -1,5 +1,7 @@
 <?php
-// 接收 JSON POST
+
+// 根據資料庫中選中照片的時間、地點，更新到編輯頁面
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $unit_id = $data['unit_id'];

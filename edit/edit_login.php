@@ -1,5 +1,7 @@
 <?php
-// get_sid.php
+
+// 讀取並回傳 Synology NAS 的登入憑證與連線資訊
+
 header("Content-Type: application/json; charset=utf-8");
 
 $json_file = '../login/session_config.json';

@@ -1,5 +1,7 @@
 <?php
-// fetch_unlocated.php
+
+// 根據搜尋條件，找出符合條件的照片
+
 header("Content-Type: application/json; charset=utf-8");
 
 date_default_timezone_set('Asia/Taipei');

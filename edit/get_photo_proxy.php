@@ -1,5 +1,9 @@
 <?php
-// get_photo_proxy.php
+
+
+// 從session_config記錄檔讀取登錄資訊，並向nas發送請求，取得照片縮圖
+
+
 $json_file = '../login/session_config.json';
 $config = json_decode(file_get_contents($json_file), true);
 

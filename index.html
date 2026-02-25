@@ -18,6 +18,7 @@
   <!--   自訂js 尚未建立 -->
   <script src="./mainpage/ai.js"></script>   <!--   處理ai助手 -->
   <script src="./mainpage/mainpage_login.js"></script>  <!--   處理登錄介面 -->
+  <script src="./mainpage/fetch_nas.js"></script>  <!--   處理資料匯入語同步 -->
 
 </head>
 <body>
@@ -39,7 +40,7 @@
 
         <section id="login_section" class="border-bottom py-4 px-3">
             <div class="container-fluid">
-                <h3><i class="bi bi-shield-lock"></i> Synology 身份驗證</h3>
+                <h3><i class="bi bi-shield-lock"></i> 第一步 Synology 身份驗證</h3>
 
                  <!-- 登錄表格 -->
                 <form id="loginForm" class="row g-3">
@@ -56,6 +57,12 @@
                     </div>
                 </form>
                 <div class="result" id="result"></div>
+
+                <h3><i class="bi bi-shield-lock"></i> 第二步 連結並匯入資料庫</h3>
+                <button type="button" id="importBtn">載入資料庫</button>
+                <div class="fetch_result" id="link_result">連接NAS狀態</div>
+                <div class="fetch_result" id="importResult">同步資料庫狀態</div>
+
             </div>
         </section>
 
