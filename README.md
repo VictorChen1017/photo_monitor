@@ -1,3 +1,21 @@
+
+# Photo Monitor - 個人化照片地圖監控系統
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> 結合 Synology NAS 與 WebGIS，打造專屬於你的照片足跡儀表板。
+
+## 📖 目錄 (Table of Contents)
+* [1. 專案標題與簡介](#1-專案標題與簡介-project-title--description)
+* [2. 系統需求](#2系統需求-requirements)
+* [3. 安裝與部署指南](#3-安裝與部署指南-installation--setup)
+* [4. 使用說明](#第五步使用說明-usage)
+* [5. 頁面功能說明](#第六步頁面功能說明-features)
+* [6. 檔案結構](#第七步檔案結構-project-structure)
+* [7. 授權協議](#-授權協議-license)
+
+---
+
 ## 1. 專案標題與簡介 (Project Title & Description)
 
 Photo Monitor 是一款專為 Synology NAS 使用者設計的照片地理資訊管理工具。它能自動提取 NAS 中的照片元數據（Metadata），並將其轉化為直觀的地圖動態展示，讓你的數位足跡不再只是冷冰冰的檔案夾。
@@ -101,7 +119,6 @@ pip install requests
 4. **瀏覽網頁：**
 開啟瀏覽器並輸入：`http://localhost/photo_monitor`
 （註：若你的資料夾名稱不同，請自行修改 URL）。
-
 ---
 
 ###  部署小提醒
@@ -110,6 +127,87 @@ pip install requests
 * **防火牆設定：** 若無法連線 NAS，請確認你的 NAS 設定中已允許該連線來源，且 QuickConnect 功能正常運作。
 
 
+## 第五步：使用說明 (Usage)
+
+系統目前為求隱私安全性，不直接儲存您的 NAS 帳號密碼。登入圖台需透過手動獲取 Synology 身份驗證資訊。
+
+### 1. 登入 Synology Photos
+
+請先在同一瀏覽器中，開啟分頁並登入您的 **Synology Photos** 官方網頁。
+
+### 2. 獲取身份驗證 Token (Cookie & X-SYNO-TOKEN)
+
+由於 Synology 安全機制限制，需手動取得臨時授權資訊：
+
+1. 在 Synology Photos 頁面按下 `F12` 鍵開啟「開發者工具」。
+2. 切換至 **「Network (網路)」** 標籤。
+3. 在頁面中隨意點擊一張照片或重新整理，在左側列表中找到名稱為 `entry.cgi` 的請求。
+4. 點擊 `entry.cgi` 後，在右側找到 **「Headers」** 欄位。
+5. **複製關鍵資訊：**
+* **Cookie:** 複製完整的字串（包含 `_SSID`, `did`, `_CrPoSt`, `id`, `io` 等參數）。
+* **X-SYNO-TOKEN:** 複製該欄位後方的隨機英數值。
+
+> **⚠️ 注意事項：** 複製貼上時，請務必移除字串前後可能產生的多餘空格，否則會導致驗證失敗。
+
+### 3. 同步照片與操作圖台
+
+回到本系統（Photo Monitor）主頁：
+
+1. 找到頁面上方的 **「Synology 身份驗證」** 欄位。
+2. 將剛才複製的 **Cookie** 與 **X-SYNO-TOKEN** 依序貼入。
+3. 點擊 **「送出」**。
+4. 點擊 **「載入資料庫」** 按鈕。
+* 若系統顯示載入筆數大於 0，即代表成功從 NAS 同步照片元數據至本地資料庫。
+* 此時地圖將會自動從exif載入照片所在的地理位置。
+
+---
+
+## 第六步：頁面功能說明 (Features)
+
+本系統提供多樣化的介面，幫助您從不同維度管理照片資產：
+
+* **🏠 主頁 (Home)**
+* 負責系統登錄與身份驗證。
+* **AI 回憶摘要小幫手 (Beta)：** 串接 OpenAI/Gemini API，根據您的照片分布與時間點，自動生成一段精彩的回憶總結。
+
+* **🔑 登入 (Sync)**
+* 資料庫同步核心操作介面，可執行與 Synology NAS 的即時資料同步。
+
+* **🗺️ 地圖 (Map)**
+* 全螢幕地圖視覺化，支援多種呈現模式：
+* **點子圖 (Cluster)：** 適合檢視精確的照片拍攝點。
+* **熱度圖 (Heatmap)：** 視覺化呈現您最常出沒的足跡密集區。
+
+* **📊 儀表板 (Dashboard)**
+* 提供數據統計圖表（如直條圖），顯示照片隨時間（年份/月份）變化的產量統計，掌握生活節奏。
+
+* **✏️ 編輯 (Edit - Beta)**
+* 提供線上編輯、更新照片地理位置資訊的功能，修正缺失或錯誤的 GPS 標籤。
+---
+
+## 第七步：檔案結構 (Project Structure)
+
+了解專案的目錄結構，有助於您進行個人化修改：
+
+```text
+├── mainpage/      # 主頁相關前端腳本與邏輯
+├── login/         # 登錄流程、NAS 身份驗證與資料庫同步腳本
+├── map/           # 地圖互動與 Leaflet 圖層切換邏輯
+├── dashboard/     # 儀表板數據處理與 Chart.js 統計圖表
+├── edit/          # 照片元數據編輯頁面相關腳本 (Beta)
+├── sql/           # 資料庫建置範例檔 (install.sql)
+├── .env.example   # 環境變數設定範本
+└── index.html      # 系統入口檔案
+
+```
+
+---
+
+## 📜 授權協議 (License)
+
+本專案採 **MIT License** 授權。歡迎個人非商業用途使用，若需進行商業應用或轉載，請註明出處。
+
+---
 
 
 
