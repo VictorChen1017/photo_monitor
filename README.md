@@ -127,7 +127,7 @@ pip install requests
 * **防火牆設定：** 若無法連線 NAS，請確認你的 NAS 設定中已允許該連線來源，且 QuickConnect 功能正常運作。
 
 
-## 4.使用說明 (Usage)
+## 4. 使用說明 (Usage)
 
 系統目前為求隱私安全性，不直接儲存您的 NAS 帳號密碼。登入圖台需透過手動獲取 Synology 身份驗證資訊。
 
