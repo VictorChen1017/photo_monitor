@@ -9,10 +9,10 @@
 * [1. 專案標題與簡介](#1-專案標題與簡介-project-title--description)
 * [2. 系統需求](#2系統需求-requirements)
 * [3. 安裝與部署指南](#3-安裝與部署指南-installation--setup)
-* [4. 使用說明](#第五步使用說明-usage)
-* [5. 頁面功能說明](#第六步頁面功能說明-features)
-* [6. 檔案結構](#第七步檔案結構-project-structure)
-* [7. 授權協議](#-授權協議-license)
+* [4. 使用說明](#4-使用說明-usage)
+* [5. 頁面功能說明](#5-頁面功能說明-features)
+* [6. 檔案結構](#6-檔案結構-project-structure)
+* [7. 授權協議](#7-授權協議-license)
 
 ---
 
