@@ -127,15 +127,15 @@ pip install requests
 * **防火牆設定：** 若無法連線 NAS，請確認你的 NAS 設定中已允許該連線來源，且 QuickConnect 功能正常運作。
 
 
-## 第五步：使用說明 (Usage)
+## 4.使用說明 (Usage)
 
 系統目前為求隱私安全性，不直接儲存您的 NAS 帳號密碼。登入圖台需透過手動獲取 Synology 身份驗證資訊。
 
-### 1. 登入 Synology Photos
+### 第一步 登入 Synology Photos
 
 請先在同一瀏覽器中，開啟分頁並登入您的 **Synology Photos** 官方網頁。
 
-### 2. 獲取身份驗證 Token (Cookie & X-SYNO-TOKEN)
+### 第二步 獲取身份驗證 Token (Cookie & X-SYNO-TOKEN)
 
 由於 Synology 安全機制限制，需手動取得臨時授權資訊：
 
@@ -149,7 +149,7 @@ pip install requests
 
 > **⚠️ 注意事項：** 複製貼上時，請務必移除字串前後可能產生的多餘空格，否則會導致驗證失敗。
 
-### 3. 同步照片與操作圖台
+### 第三步 同步照片與操作圖台
 
 回到本系統（Photo Monitor）主頁：
 
@@ -162,7 +162,7 @@ pip install requests
 
 ---
 
-## 第六步：頁面功能說明 (Features)
+## 5. 頁面功能說明 (Features)
 
 本系統提供多樣化的介面，幫助您從不同維度管理照片資產：
 
@@ -185,7 +185,7 @@ pip install requests
 * 提供線上編輯、更新照片地理位置資訊的功能，修正缺失或錯誤的 GPS 標籤。
 ---
 
-## 第七步：檔案結構 (Project Structure)
+## 6. 檔案結構 (Project Structure)
 
 了解專案的目錄結構，有助於您進行個人化修改：
 
@@ -203,7 +203,7 @@ pip install requests
 
 ---
 
-## 📜 授權協議 (License)
+## 7. 授權協議 (License)
 
 本專案採 **MIT License** 授權。歡迎個人非商業用途使用，若需進行商業應用或轉載，請註明出處。
 
