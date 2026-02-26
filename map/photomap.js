@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
 
             console.log("選取完成，座標範圍：", finalBounds);
 
-            
+
             // finalBounds 將作為搜尋條件 目前功能尚未實現
             // 搜尋請求預留
 
@@ -347,11 +347,7 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
                 weight: 2,          // 實線寬度
                 fillOpacity: 0.2    // 稍微加深填充
             });
-                    
-            
-            
-            // 選項：如果你希望畫完一次就自動關閉模式： 僅允許手動關閉
-            // toggleBtn.click();  
+                
 
             // 滑鼠放開後 將true 改成 false
             if (isSelectionMode){
