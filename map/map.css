@@ -52,3 +52,19 @@
     margin-top: 10px;
     font-family: sans-serif;
 }
+
+
+#draw-toggle {
+    z-index: 1000;
+    padding: 10px;
+    background-color: white;
+    border: 2px solid #ccc;
+    cursor: pointer;
+}
+
+/* 啟動狀態的樣式 */
+#draw-toggle.active {
+    background-color: #ffcc00; /* 變成黃色或你喜歡的顏色 */
+    border-color: #ff9900;
+    font-weight: bold;
+}

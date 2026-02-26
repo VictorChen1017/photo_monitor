@@ -4,7 +4,7 @@
 // 從session_config記錄檔讀取登錄資訊，並向nas發送請求，取得照片縮圖
 
 
-$json_file = '../login/session_config.json';
+$json_file = '../login/session_config.json'; // 要記得改掉!!!!!!!
 $config = json_decode(file_get_contents($json_file), true);
 
 // 外部傳入

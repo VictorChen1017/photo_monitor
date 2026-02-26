@@ -211,6 +211,168 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
         });
 
 
+        // 加入繪圖功能 預留html按鈕
+
+        // 1. 初始化變數
+        let isSelectionMode = false; // 控制選取模式
+        let startLatLng, tempRectangle;
+        let buttonswitch = false;
+
+        // 定義函數 控制矩形跟著滑鼠跑
+    
+
+        // 2. 建立 UI 按鈕 (這部分可以用 HTML 按鈕代替)
+        const toggleBtn = document.getElementById('draw-toggle');
+
+        // 2. 使用監聽器 控制按鈕的外觀 以及isSelectionMode的狀態
+        toggleBtn.addEventListener("click", function() {
+
+            // 切換布林值狀態 僅從false 改成true
+            if (!isSelectionMode){
+                isSelectionMode = true;
+            }
+
+            // 切換
+            buttonswitch  = !buttonswitch ; 
+
+
+            console.log("buttonswitch :",buttonswitch );
+
+            // 判斷按鈕切換
+
+             if (buttonswitch) {
+
+                // 切換按鈕的 CSS 類別與文字
+                // 按鈕激活
+                this.classList.toggle("active");
+                this.innerText = "停止選取";
+
+                map.dragging.disable(); // 鎖定地圖不讓它飄移
+                map.getContainer().style.cursor = 'crosshair'; // 鼠標變十字
+
+             }else {
+
+                // 按鈕滅活
+                this.classList.remove("active");
+                this.innerText = "框選照片";
+
+                // 清除多餘多邊形
+                if (tempRectangle) {
+                    map.removeLayer(tempRectangle); // 1. 先從地圖移除（畫面消失）
+                    tempRectangle = null;           // 2. 再清空變數（釋放記憶體）
+                }
+
+                // 按鈕回復原狀
+                map.getContainer().style.cursor = '';
+
+             }
+
+
+
+            
+
+            if (isSelectionMode) {
+                // --- 進入選取模式 ---
+
+                console.log("SelectionMode: ",isSelectionMode);
+    
+                
+                
+            } else {
+
+                console.log("SelectionMode: ",isSelectionMode);
+                // --- 結束選取模式 ---
+                map.dragging.enable(); 
+                map.getContainer().style.cursor = '';
+
+                // *** 關鍵：如果已有矩形，先移除它 ***
+                
+                //map.removeLayer(tempRectangle);
+                //console.log("tempRectangle removed ");
+                
+                
+                
+                // 如果關閉模式時想清除地圖上的矩形，取消下方註解：
+                //if (tempRectangle) { map.removeLayer(tempRectangle); tempRectangle = null; }
+            }
+        });
+
+        // 3. 繪圖滑鼠事件 (只有在 isSelectionMode 為 true 時生效)
+        map.on('mousedown', (e) => {
+            if (!isSelectionMode || !buttonswitch) return;
+
+            console.log("mousedown");
+
+            
+            
+            // 如果畫新矩形前要刪除舊的，可以在這加入 map.removeLayer(tempRectangle)
+            startLatLng = e.latlng;
+            tempRectangle = L.rectangle([startLatLng, startLatLng], {
+                color: "#3388ff",
+                weight: 1,
+                fillOpacity: 0.2,
+                dashArray: '5, 5' // 虛線感
+            }).addTo(map);
+        });
+
+        map.on('mousemove', (e) => {
+            if (!isSelectionMode || !tempRectangle || !buttonswitch) return;
+            tempRectangle.setBounds(L.latLngBounds(startLatLng, e.latlng));
+        });
+
+        map.on('mouseup', (e) => {
+
+            console.log("mouseup");
+
+            // 控制按鈕
+            toggleBtn.innerText = "送出篩選";
+            
+
+            if (!isSelectionMode || !tempRectangle || !buttonswitch) return;
+            
+            // 獲取最終範圍 (供之後篩選照片點位使用)
+            const finalBounds = tempRectangle.getBounds();
+
+            console.log("選取完成，座標範圍：", finalBounds);
+
+            
+            // finalBounds 將作為搜尋條件 目前功能尚未實現
+            // 搜尋請求預留
+
+            
+
+            // 將虛線 (dashArray) 移除，並加深透明度，讓它看起來是「已確定的範圍」
+            tempRectangle.setStyle({
+                dashArray: null,    // 變回實線
+                weight: 2,          // 實線寬度
+                fillOpacity: 0.2    // 稍微加深填充
+            });
+                    
+            
+            
+            // 選項：如果你希望畫完一次就自動關閉模式： 僅允許手動關閉
+            // toggleBtn.click();  
+
+            // 滑鼠放開後 將true 改成 false
+            if (isSelectionMode){
+                isSelectionMode = false;
+            }
+
+            console.log("SelectionMode: ",isSelectionMode);
+
+            
+
+            console.log(tempRectangle)
+            //tempRectangle = null
+
+            
+
+            
+
+            
+        });
+
+
 
 
 
