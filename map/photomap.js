@@ -21,24 +21,51 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
                     maxZoom: 18,
                 }).addTo(map);
 
+        // 連線嘗試(用於縮圖)
+
+         // 頁面載入時初始化連線資訊
+        async function initSession() {
+            try {
+                const res = await fetch('./edit/edit_login.php');
+                const data = await res.json();
+                if (data.sid && data.nas_url) {
+                    NAS_CONFIG.token = data.token; // 對應id 
+                    NAS_CONFIG.url = data.nas_url;
+                    console.log("✅ 已載入 Session 資訊");
+                }
+            } catch (err) {
+                console.error("無法載入 Session 設定:", err);
+            }
+        }
+            // 執行初始化
+        initSession();
+
+
         // 圖層控制
         var heatLayer; 
-        var pointLayer; 
         var pointboxLayer; // 優化的點圖層
         
 
         // 定位
-        map.locate({ setView: true, maxZoom: 16 });
 
-        map.on('locationerror', function(e) {
-            alert("無法取得定位：" + e.message);
-        });
+        document.getElementById("loc-toggle").addEventListener("click", function() {
 
-        map.on('locationfound', function (e) {
-            L.marker(e.latlng).addTo(map)
-            .bindPopup("你在這裡").openPopup();
-            handleMapClick(e.latlng.lat, e.latlng.lng);
+            map.locate({ setView: true, maxZoom: 16 });
+            map.on('locationerror', function(e) {
+                alert("無法取得定位：" + e.message);
+            });
+
+            map.on('locationfound', function (e) {
+                L.marker(e.latlng).addTo(map)
+                .bindPopup("你在這裡").openPopup();
+                handleMapClick(e.latlng.lat, e.latlng.lng);
+            });
+
+            
         });
+        
+
+        
 
         //熱度圖製作 連結資料庫
         // 回傳值data是一個json 包含經緯度資料，不須強度
@@ -98,6 +125,23 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
             }, 300); // ← 延遲 300ms
         });
 
+        // 加入函式 照片預覽
+
+
+
+        function getPhotoPreviewUrl(unitId, cacheKey, size = 'sm') {
+            return new Promise((resolve, reject) => {
+                const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cacheKey}&size=${size}`;
+                
+                const img = new Image();
+                // 預載圖片以確保寬高正確
+                img.onload = () => resolve(proxyUrl);
+                img.onerror = () => reject(new Error("NAS 連線失敗"));
+                
+                img.src = proxyUrl;
+            });
+        }
+
         
 
 
@@ -143,20 +187,76 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
                             fillOpacity: 0.6
                         }).addTo(pointboxLayer);
 
-                        const tooltipHtml = `📸 ID: ${d.id}<br>🕒 ${d.time}`;
+                        
 
                         // 🔹 改為滑鼠事件動態生成標籤
 
-                        marker.on("mouseover", function(e) {
+                        // 1. 定義預覽窗格的 HTML (包含 CSS 樣式控制大小)
+
+
+      
+
+                        marker.on("mouseover", async function(e) {
+
+
+                            // html
+
+                            // 原始的標籤
+
+                            const tooltipHtml = `📸 ID: ${d.id}<br>🕒 ${d.time}`;
+
+                            // 先顯示載入中的 Tooltip (避免畫面沒反應)
+                            const initialContent = `
+                                <div class="photo-tooltip-container">
+                                    <div class="photo-preview-box d-flex justify-content-center">
+                                        <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
+                                    </div>
+                                    <div class="photo-info">${tooltipHtml}</div>
+                                </div>
+                            `;
+
+                        
+                            // 一開始用initialContent 等待相片載入
+
                             const tooltip = L.tooltip({
                                 direction: "top",
-                                opacity: 0.9,
+                                offset: [0, -10], // 往上偏移一點，避免擋住 Marker
+                                opacity: 1.0,
                                 className: "photo-tooltip"
                             })
-                            .setContent(tooltipHtml)
+                            .setContent(initialContent) //.setContent(tooltipHtml)
+    
                             .setLatLng(e.latlng)
                             .addTo(map);
                             marker._tempTooltip = tooltip; // 暫存 tooltip 參考
+
+                            // 若照片載好
+
+                            try { // 2. 呼叫封裝好的函式，等待圖片載入
+                            // const imageUrl = await getPhotoPreviewUrl(photo.id, photo.cache_key);
+                            const imageUrl = await getPhotoPreviewUrl(d.unit_id, d.cache_key);
+                            
+
+                            // 3. 檢查使用者滑鼠是否還在上面（避免滑走了才更新）
+                            if (marker._tempTooltip && map.hasLayer(marker._tempTooltip)) {
+                                const finalHtml = `
+                                    <div class="photo-tooltip-container">
+                                        <div class="photo-preview-box">
+                                            <img src="${imageUrl}" class="img-fluid shadow-sm rounded" 
+                                                style="width: 150px; height: auto; display: block; margin-bottom: 5px;">
+                                        </div>
+                                        <div class="photo-info">${tooltipHtml}</div>
+                                    </div>
+                                `;
+                                marker._tempTooltip.setContent(finalHtml);
+                            }} catch (err) {
+                                if (marker._tempTooltip) {
+                                    marker._tempTooltip.setContent(`<div class="text-danger small">無法載入預覽</div>${tooltipHtml}`);
+                                }
+                            }
+
+
+
                         });
 
                         // 處理滑鼠移開後隱藏

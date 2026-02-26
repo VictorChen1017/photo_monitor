@@ -10,11 +10,13 @@ $config = json_decode(file_get_contents($json_file), true);
 // 外部傳入
 $unitId = $_GET['unitId'];
 $cache_key = $_GET['cache_key'] ?? $_GET['cacheKey'] ?? '';
+$size = $_GET['size'] ?? 'm'; // 影像大小，預設為m
 
 // 1. 組合目標 URL
 $nas_url = $config['nas_url'];
 $token = $config['token'];
-$target_url = "{$nas_url}/synofoto/api/v2/p/Thumbnail/get?id={$unitId}&cache_key=%22{$cache_key}%22&type=%22unit%22&size=%22xl%22&SynoToken={$token}";
+//$target_url = "{$nas_url}/synofoto/api/v2/p/Thumbnail/get?id={$unitId}&cache_key=%22{$cache_key}%22&type=%22unit%22&size=%22xl%22&SynoToken={$token}";
+$target_url = "{$nas_url}/synofoto/api/v2/p/Thumbnail/get?id={$unitId}&cache_key=%22{$cache_key}%22&type=%22unit%22&size=${size}&SynoToken={$token}";
 error_log("Debug NAS URL: " . $target_url);
 // 2. 組合 Cookie 字串 (這就是手動成功關鍵)
 $cookie_str = "";

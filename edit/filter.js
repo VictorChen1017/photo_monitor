@@ -168,7 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
             previewBody.innerHTML = '<div class="spinner-border text-danger" role="status"></div>';
 
             // 呼叫 PHP 代理，並傳入 unitId 與 cacheKey
-            const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}`;
+            const size = 'm' // 影像大小
+            const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}&size=${size}`;
             
             const img = new Image();
             img.className = "img-fluid shadow-sm rounded";

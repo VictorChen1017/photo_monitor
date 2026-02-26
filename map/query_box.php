@@ -32,7 +32,7 @@ $west  = floatval($_GET['west']);
 // 查詢範圍內的點
 // 結構化查詢以防SQL注入
 $stmt = $mysqli->prepare("
-    SELECT id, time, gps_latitude, gps_longitude  
+    SELECT id, time, gps_latitude, gps_longitude , cache_key, unit_id
     FROM photos
     WHERE gps_latitude IS NOT NULL 
       AND gps_longitude IS NOT NULL 
@@ -45,6 +45,8 @@ $result = $stmt->get_result();
 
 
 // 蒐集查詢結果，組成 JSON 陣列
+
+// 這裡可能需要優化 例如減少查詢欄位
 $heatPoints = [];
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -52,7 +54,9 @@ if ($result && $result->num_rows > 0) {
             "id" => intval($row["id"]),
             "time" => date("Y-m-d H:i:s", $row["time"]), // 格式化成日期
             "gps_latitude" => floatval($row["gps_latitude"]),
-            "gps_longitude" => floatval($row["gps_longitude"])
+            "gps_longitude" => floatval($row["gps_longitude"]),
+            "cache_key" => $row["cache_key"], // 通常為字串，直接回傳
+            "unit_id"   => $row["unit_id"]    // 若為數值可加 intval()，若含字母則維持原樣
         ];
     }
 }
