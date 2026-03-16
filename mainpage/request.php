@@ -42,9 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-#$cookie_str = "_SSID=oYcxi6AA19cL0xcl5oaoE_3jhk5JUM-HJh7GjX75hjU; stay_login=0; did=3mvxdgJ3AdjrBvxeHhPYq-NBY2A0ZxOD6jGMRJfnGyDuIOrG9RRW2SMRU4XknKKw2wHDkZ_M18T0HRC_HRYkMw; _CrPoSt=cHJvdG9jb2w9aHR0cHM6OyBwb3J0PTsgcGF0aG5hbWU9Lzs%3D; type=tunnel; id=xTdodm1e-YU7asSv05peX_UGBxAvd84cos5p-rUMiCEOnvvKzublvZw7q1cJm3WPLiVBjz7IRtIloo5o68cFZ0; io=L_FMb8BY-vsbJ_x2AAA9";
-#$token = "HPD3XLbB0mMgA";
-
 
 
 ?>

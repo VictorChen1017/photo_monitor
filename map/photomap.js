@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function () { // 確保資源加�
                 img.onerror = () => reject(new Error("NAS 連線失敗"));
                 
                 img.src = proxyUrl;
+                
             });
         }
 

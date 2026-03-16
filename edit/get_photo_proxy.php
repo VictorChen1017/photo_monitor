@@ -4,7 +4,7 @@
 // 從session_config記錄檔讀取登錄資訊，並向nas發送請求，取得照片縮圖
 
 
-$json_file = '../login/session_config.json'; // 要記得改掉!!!!!!!
+$json_file = '../mainpage/session_config.json'; 
 $config = json_decode(file_get_contents($json_file), true);
 
 // 外部傳入
@@ -35,7 +35,7 @@ $options = [
 ];
 
 $context = stream_context_create($options);
-$image_data = file_get_contents($target_url, false, $context);
+$image_data = file_get_contents($target_url, false, $context); // 照片資料
 
 // 4. 偽裝成圖片回傳給 JS
 header("Content-Type: image/jpeg");
