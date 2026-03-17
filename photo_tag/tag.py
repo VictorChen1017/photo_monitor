@@ -77,7 +77,7 @@ def write_log(message, log_file=LOG_FILE):
     # (選擇性) 寫入 Log 的同時，也印在畫面上方便你看
     print(f"[{now_str}] {message}")
 
-def process_photos(limit=2):
+def process_photos(limit=1000):
     # 1. 建立資料庫連線 (請替換為你的實際資料庫設定)
     connection = pymysql.connect(
         host=os.getenv("DB_HOST"),
@@ -98,6 +98,7 @@ def process_photos(limit=2):
             while trial < limit:  # 可以設定一個試次限制，避免無限迴圈
 
                 trial = trial + 1
+                print(f"本執行梯次第 {trial} 筆資料...")
                 # 2. 每次只抓取「大於上次進度 ID」的第一筆資料 (一次一個！)
                 sql = """
                     SELECT id,unit_id, cache_key, city_id, district_id, village_id, route_id, time 
@@ -125,61 +126,89 @@ def process_photos(limit=2):
                 route_id = row['route_id']
                 address = " ".join(str(part) if part is not None and part != "" else " " for part in [city_id, district_id, village_id, route_id])
 
-                # 時間 轉換成可讀格式 
-                #taiwan_tz = timezone(timedelta(hours=8))
-                dt_object = datetime.fromtimestamp(row['time'])
+                dt_object = datetime.fromtimestamp(row['time'], tz=timezone.utc) # 資料庫時間已經是台灣時間 或是拍照時的當地時間
                 timestamp_dt = dt_object.strftime('%Y-%m-%d %H:%M:%S')
 
                 print(f"----------------------------------------")
                 print(f"正在處理 ID: {current_id} | 地點: {address} | 時間: {timestamp_dt}")
 
-                try:
-                    # 3. 取得圖片
-                    img = get_photo_preview_url(current_unitid, cache_key, 'm')
+                # 建立重試機制
+                max_retries=3
+
+                for attempt in range(max_retries):
+
+                    try:
+                        # 3. 取得圖片
+                        img = get_photo_preview_url(current_unitid, cache_key, 'm')
+                        
+                        # 4. 呼叫 Gemini 並傳入動態獲取的地址與時間
+                        ai_summary = gemeni_call(img, photo_address=address, timestamp=timestamp_dt)
+                        #print(f"🤖 AI 描述: {ai_summary}")
+
+                        # 存入資料庫phototag
                     
-                    # 4. 呼叫 Gemini 並傳入動態獲取的地址與時間
-                    ai_summary = gemeni_call(img, photo_address=address, timestamp=timestamp_dt)
-                    #print(f"🤖 AI 描述: {ai_summary}")
+                        upsert_sql = """
+                            INSERT INTO photoexif.phototags (unit_id, cache_key, tag, time)
+                            
+                            VALUES (%s, %s, %s, %s)
+                            ON DUPLICATE KEY UPDATE 
+                                cache_key = VALUES(cache_key),
+                                tag = VALUES(tag), 
+                                time = VALUES(time)
+                        """
 
-                    # 存入資料庫phototag
-                   
-                    upsert_sql = """
-                        INSERT INTO photoexif.phototags (unit_id, cache_key, tag, time)
-                        VALUES (%s, %s, %s, %s)
-                        ON DUPLICATE KEY UPDATE 
-                            tag = VALUES(tag), 
-                            time = VALUES(time)
-                    """
+                        cursor.execute(upsert_sql, (current_unitid, cache_key, ai_summary, timestamp_dt))
 
-                    cursor.execute(upsert_sql, (current_unitid, cache_key, ai_summary, timestamp_dt))
+                        connection.commit()
+                        # 加上 rowcount 判斷來印出明確的結果
+                        if cursor.rowcount == 1:
+                            print(f"✅ 成功【新增】照片標籤 (unit_id: {current_unitid})")
+                        elif cursor.rowcount == 2:
+                            print(f"🔄 成功【更新】已存在的照片標籤 (unit_id: {current_unitid})")
+                        else:
+                            print(f"⚠️ 執行完成，但狀態未知 (unit_id: {current_unitid})")
 
-                    connection.commit()
-                    # 加上 rowcount 判斷來印出明確的結果
-                    if cursor.rowcount == 1:
-                        print(f"✅ 成功【新增】照片標籤 (unit_id: {current_unitid})")
-                    elif cursor.rowcount == 2:
-                        print(f"🔄 成功【更新】已存在的照片標籤 (unit_id: {current_unitid})")
-                    else:
-                        print(f"⚠️ 執行完成，但狀態未知 (unit_id: {current_unitid})")
+                        # 5. 記錄當前進度並推進迴圈
+                        last_id = row['time'] # 改為依據時間戳來記錄進度
+                        save_progress(last_id)
 
-                    # 5. 記錄當前進度並推進迴圈
-                    last_id = row['time'] # 改為依據時間戳來記錄進度
-                    save_progress(last_id)
+                        message =  f"""----------------------------------------
+                        正在處理 ID: {current_id} | 地點: {address} | 時間: {timestamp_dt}
+                        🤖 AI 描述: {ai_summary}"""
 
-                    message =  f"""----------------------------------------
-                    正在處理 ID: {current_id} | 地點: {address} | 時間: {timestamp_dt}
-                    🤖 AI 描述: {ai_summary}"""
+                        write_log(message, log_file=LOG_FILE)
+                        print(f"✅ ID: {current_id} 處理完成，進度已儲存。")
+                        
+                        # 稍微暫停，避免 NAS 或 API 請求過於頻繁導致被阻擋 (Rate Limit)
+                        time.sleep(20) 
 
-                    write_log(message, log_file=LOG_FILE)
-                    print(f"✅ ID: {current_id} 處理完成，進度已儲存。")
-                    
-                    # 稍微暫停，避免 NAS 或 API 請求過於頻繁導致被阻擋 (Rate Limit)
-                    time.sleep(2) 
+                        break # 成功處理後跳出重試迴圈，繼續處理下一筆資料
 
-                except Exception as e:
-                    print(f"❌ 處理 ID {current_id} 時發生錯誤: {e}")
-                    # 發生嚴重錯誤時跳出迴圈，方便人工檢查
-                    break
+                    except Exception as e:
+                        print(f"❌ 處理 ID {current_id} 時發生錯誤: {e}")
+
+                        if "503" in str(e) or "UNAVAILABLE" in str(e):
+                            # 出現503錯誤 代表賜服器忙碌 稍後嘗試
+                            if attempt < max_retries - 1:
+                                wait_time = 15 # 等待10秒後重試 
+                                print(f"⚠️ 伺服器忙碌中 (503)，{wait_time} 秒後進行第 {attempt + 2} 次重試...")
+                                time.sleep(wait_time)
+                                continue
+                        # 發生嚴重錯誤時跳出迴圈，方便人工檢查
+
+                        # 加一個照片縮圖處理失敗的錯誤，通常是 NAS 連線問題，這種情況下直接跳過這筆資料，繼續處理下一筆
+                        elif "NAS 連線失敗" in str(e):
+                            if attempt < max_retries - 1:
+                                wait_time = 10 # 等待10秒後重試 
+                                print(f"⚠️ 伺服器忙碌中 (503)，{wait_time} 秒後進行第 {attempt + 2} 次重試...")
+                                time.sleep(wait_time)
+                                continue
+                            print(f"⚠️ 由於 NAS 連線失敗，已跳過 ID {current_id}，繼續處理下一筆資料。")
+                            break
+
+                        else:
+                            print(f"❌ 處理 ID {current_id} 時發生未預期的錯誤: {e}")
+                            break
 
     finally:
         # 確保最後一定會關閉資料庫連線

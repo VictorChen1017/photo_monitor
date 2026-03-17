@@ -4,6 +4,7 @@
 # 不上傳作業系統暫存檔
 .DS_Store
 Thumbs.db
+process_log.txt
 
 # 不上傳 IDE 編輯器暫存資料
 .vscode/
