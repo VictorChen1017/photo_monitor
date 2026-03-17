@@ -17,9 +17,9 @@ PROGRESS_FILE = os.path.join(current_dir, "progress.txt")
 LOG_FILE = os.path.join(current_dir, "process_log.txt")
 
 # 1. 取得照片的base64字串
-def get_photo_preview_url(unit_id, cache_key, size='sm'):
+def get_photo_preview_url(unit_id, cache_key, size='m'):
     # 設定基礎 URL (請根據你的實際環境修改網址主體)
-    base_url = "http://localhost/repo/photo_monitor_ver260208/edit/get_photo_proxy.php"
+    base_url = "http://localhost/repo/photo_monitor_ver260208/photo_tag/get_photo_base64.php"
     
     # 組合參數
     params = {
@@ -31,9 +31,13 @@ def get_photo_preview_url(unit_id, cache_key, size='sm'):
     try:
         # 使用 get 請求並設定超時，模擬 JS 的 pre-load 檢查
         response = requests.get(base_url, params=params, timeout=50)
+        #req = response.request
+        #print(f"網址 (URL): {req.url}")
+        #print(f"請求標頭 (Headers): {req.headers}")
         
         # 檢查 HTTP 狀態碼是否為 200 (OK)
         response.raise_for_status()
+        
         
         # 如果成功，回傳完整的二進制檔案
         return response.content
@@ -47,8 +51,8 @@ def get_last_processed_id(progress_file=PROGRESS_FILE):
     if os.path.exists(progress_file):
         with open(progress_file, "r") as f:
             content = f.read().strip()
-            return int(content) if content.isdigit() else 0
-    return 0
+            return int(content) if content.isdigit() else 0 #int(time.time())
+    return 0 #int(time.time())
 
 def save_progress(last_id, progress_file=PROGRESS_FILE):
     """儲存當前處理完成的 ID"""
@@ -83,8 +87,9 @@ def process_photos(limit=2):
         cursorclass=pymysql.cursors.DictCursor
     )
 
-    last_id = get_last_processed_id()
-    print(f"啟動程式... 從 ID > {last_id} 開始處理。")
+    last_id = get_last_processed_id() # 改為紀錄時間
+    print (last_id)
+    print(f"啟動程式... 從 時間戳 < {last_id} 開始處理。")
 
     try:
         with connection.cursor() as cursor:
@@ -97,8 +102,8 @@ def process_photos(limit=2):
                 sql = """
                     SELECT id,unit_id, cache_key, city_id, district_id, village_id, route_id, time 
                     FROM photos
-                    WHERE id > %s 
-                    ORDER BY id ASC 
+                    WHERE time > %s 
+                    ORDER BY time ASC
                     LIMIT 1
                 """
                 cursor.execute(sql, (last_id,))
@@ -121,15 +126,16 @@ def process_photos(limit=2):
                 address = " ".join(str(part) if part is not None and part != "" else " " for part in [city_id, district_id, village_id, route_id])
 
                 # 時間 轉換成可讀格式 
-                taiwan_tz = timezone(timedelta(hours=8))
-                timestamp_dt = datetime.fromtimestamp(row['time'], tz=taiwan_tz)
+                #taiwan_tz = timezone(timedelta(hours=8))
+                dt_object = datetime.fromtimestamp(row['time'])
+                timestamp_dt = dt_object.strftime('%Y-%m-%d %H:%M:%S')
 
                 print(f"----------------------------------------")
                 print(f"正在處理 ID: {current_id} | 地點: {address} | 時間: {timestamp_dt}")
 
                 try:
                     # 3. 取得圖片
-                    img = get_photo_preview_url(current_id, cache_key, 'm')
+                    img = get_photo_preview_url(current_unitid, cache_key, 'm')
                     
                     # 4. 呼叫 Gemini 並傳入動態獲取的地址與時間
                     ai_summary = gemeni_call(img, photo_address=address, timestamp=timestamp_dt)
@@ -157,7 +163,7 @@ def process_photos(limit=2):
                         print(f"⚠️ 執行完成，但狀態未知 (unit_id: {current_unitid})")
 
                     # 5. 記錄當前進度並推進迴圈
-                    last_id = current_id # 數字的id
+                    last_id = row['time'] # 改為依據時間戳來記錄進度
                     save_progress(last_id)
 
                     message =  f"""----------------------------------------
@@ -202,8 +208,34 @@ def gemeni_call(image_bytes,photo_address = None,timestamp = None):
         #top_k=40                   # 從前 K 個最可能的字詞中做選擇
     )
 
-    # 提示詞組裝
-    prompt_text = f"這張照片的預估拍攝地點是『{photo_address}』，預估拍攝時間是『{timestamp}』。請參考這個地點資訊來描述照片內容。但如果照片內容（如室內近拍、人物特寫）明顯與該地理位置無關，請忽略地點資訊，直接客觀描述照片本身看到的畫面。"
+    # 提示詞組裝 並加入地點判斷
+
+    has_location = bool(photo_address and photo_address.strip())
+
+    if has_location:
+        print(f"📍 地址資訊存在，將其作為輔助參考。地址: {photo_address}")
+   
+    # 情況 A：有地址資料。將地址降級為「輔助參考」，強調「以視覺為主」
+        prompt_text = f"""以下提供影像的背景詮釋資料作為輔助參考：
+        - 拍攝地點：{photo_address}
+        - 拍攝時間：{timestamp}
+
+        【任務指示】：
+        請客觀描述這張影像中實際可見的場景、建築特徵、物件與人物活動。
+        若影像的視覺特徵（如招牌文字、特定地標）與提供的地點資訊不符，請**絕對以影像實際呈現的內容為主**，忽略輔助地點。
+
+        【嚴格格式限制】：
+        1. 直接開始描述畫面內容，絕對不要重複上述的時間與地點資訊。
+        2. 請用自然流暢的繁體中文，將敘述控制在 3 到 4 句以內，精簡扼要。"""
+    else:
+        print("⚠️ 地址資訊不存在，將完全忽略地點，專注於影像的視覺內容。")
+        # 情況 B：沒有地址資料（空值）。完全不要提及地點，讓 AI 純粹進行視覺判讀
+        prompt_text = f"""【任務指示】：
+        請客觀描述這張影像中實際可見的場景、建築特徵、物件與人物活動。
+
+        【嚴格格式限制】：
+        1. 直接開始描述畫面內容，不要使用「這張照片描繪了...」等開場白。
+        2. 請用自然流暢的繁體中文，將敘述控制在 3 到 4 句以內，精簡扼要。"""
 
     response = client.models.generate_content(
     model="gemini-2.5-flash-lite",

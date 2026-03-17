@@ -169,8 +169,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 呼叫 PHP 代理，並傳入 unitId 與 cacheKey
             const size = 'm' // 影像大小
-            const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}&size=${size}`;
             
+            const proxyUrl = `./edit/get_photo_proxy.php?unitId=${unitId}&cacheKey=${cache_key}&size=${size}`;
+            //const absoluteUrl = new URL(proxyUrl, window.location.href).href;
+            //console.log("絕對 URL:", absoluteUrl);
+
             const img = new Image();
             img.className = "img-fluid shadow-sm rounded";
             img.style.maxHeight = "400px";

@@ -39,7 +39,7 @@ $options = [
 
 $context = stream_context_create($options);
 $image_data = file_get_contents($target_url, false, $context); // 照片資料
-
+header("Content-Type: image/jpeg");
 
 echo $image_data; //debug
 
