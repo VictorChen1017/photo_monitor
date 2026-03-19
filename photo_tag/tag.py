@@ -77,7 +77,7 @@ def write_log(message, log_file=LOG_FILE):
     # (選擇性) 寫入 Log 的同時，也印在畫面上方便你看
     print(f"[{now_str}] {message}")
 
-def process_photos(limit=1000):
+def process_photos(limit=500):
     # 1. 建立資料庫連線 (請替換為你的實際資料庫設定)
     connection = pymysql.connect(
         host=os.getenv("DB_HOST"),
@@ -180,35 +180,57 @@ def process_photos(limit=1000):
                         print(f"✅ ID: {current_id} 處理完成，進度已儲存。")
                         
                         # 稍微暫停，避免 NAS 或 API 請求過於頻繁導致被阻擋 (Rate Limit)
-                        time.sleep(20) 
+                        time.sleep(5) 
 
                         break # 成功處理後跳出重試迴圈，繼續處理下一筆資料
 
                     except Exception as e:
                         print(f"❌ 處理 ID {current_id} 時發生錯誤: {e}")
-
                         if "503" in str(e) or "UNAVAILABLE" in str(e):
                             # 出現503錯誤 代表賜服器忙碌 稍後嘗試
                             if attempt < max_retries - 1:
                                 wait_time = 15 # 等待10秒後重試 
                                 print(f"⚠️ 伺服器忙碌中 (503)，{wait_time} 秒後進行第 {attempt + 2} 次重試...")
+                                message = f"⚠️ 伺服器忙碌中 (503)，{wait_time} 秒後進行第 {attempt + 2} 次重試..."
+                                write_log(message, log_file=LOG_FILE)
                                 time.sleep(wait_time)
                                 continue
                         # 發生嚴重錯誤時跳出迴圈，方便人工檢查
 
                         # 加一個照片縮圖處理失敗的錯誤，通常是 NAS 連線問題，這種情況下直接跳過這筆資料，繼續處理下一筆
-                        elif "NAS 連線失敗" in str(e):
+                        elif "400" in str(e):
                             if attempt < max_retries - 1:
                                 wait_time = 10 # 等待10秒後重試 
                                 print(f"⚠️ 伺服器忙碌中 (503)，{wait_time} 秒後進行第 {attempt + 2} 次重試...")
                                 time.sleep(wait_time)
                                 continue
                             print(f"⚠️ 由於 NAS 連線失敗，已跳過 ID {current_id}，繼續處理下一筆資料。")
+                            message = f"⚠️ 由於 NAS 連線失敗，已跳過 ID {current_id}，繼續處理下一筆資料。" 
+                            write_log(message, log_file=LOG_FILE)
+                            save_progress(last_id) # 儲存當前id 才可以跳過
                             break
+                        
+                        elif "1048" in str(e):
+                            if attempt < max_retries - 1:
+                                wait_time = 10 # 等待10秒後重試
+                                print(f"⚠️ 資料庫錯誤 (1048)，可能是因為資料不完整，{wait_time} 秒後進行第 {attempt + 2} 次重試...")
+                                time.sleep(wait_time)
+                                continue
+                            break
+
 
                         else:
                             print(f"❌ 處理 ID {current_id} 時發生未預期的錯誤: {e}")
-                            break
+                            message = f"❌ 處理 ID {current_id} 時發生未預期的錯誤: {e}"
+                            write_log(message, log_file=LOG_FILE)
+                            save_progress(last_id) # 儲存當前id 才可以跳過
+                            raise e # 其他錯誤直接丟出，讓程式停下來，方便人工檢查
+                        
+    except Exception as e:
+        print(f"❌ 程式執行過程中發生錯誤: {e}")
+        message = f"❌ 程式執行過程中發生錯誤，程式已停止: {e}"
+        write_log(message, log_file=LOG_FILE)
+
 
     finally:
         # 確保最後一定會關閉資料庫連線
